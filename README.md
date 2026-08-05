@@ -5,7 +5,7 @@
 Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTIG cassettes (`vkg.1`–`46`), validated against matched **VUS (USEIS)** frames (`vkg.47`–`56`).
 
 **Organization:** [isas-yamamoto](https://github.com/isas-yamamoto) · **License:** MIT  
-**Recommended remote:** `https://github.com/isas-yamamoto/viking-vl2-seisf-decode`
+**Repository:** `https://github.com/isas-yamamoto/viking-vl2-seisf-decode`
 
 ## Path D (summary)
 
@@ -35,13 +35,12 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 | `src/` | Decoder, CLI, regression tests |
 | `vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
-| `draft/` | English manuscript outline (AI-venue framing) |
-| `docs/` | English primary (`usage.md`, …); Japanese as `*.ja.md` |
+| `docs/` | Operator docs (`usage.md`; Japanese `usage.ja.md`) |
 
-## Docs
+## Documentation
 
-- English: [docs/usage.md](docs/usage.md), [docs/public-release.md](docs/public-release.md)
-- 日本語: [docs/usage.ja.md](docs/usage.ja.md), [docs/public-release.ja.md](docs/public-release.ja.md)
+- English: [docs/usage.md](docs/usage.md)
+- 日本語: [docs/usage.ja.md](docs/usage.ja.md)
 
 ## Cite / materials
 
@@ -49,6 +48,4 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 - Provenance: `NOTICE` (UTIG web PDFs; N51SUB photo from paper at UTIG)
 - License: `LICENSE` (MIT for software)
 
-## Paper draft
-
-`draft/manuscript.md` — English, AI-assisted reverse engineering + dual-archive ground truth.
+A scholarly paper draft, if any, is maintained in a **separate repository**, not here.
