@@ -1,0 +1,24 @@
+# Third-party and archival materials
+
+## Software (this repository)
+
+- Original Python decoder under `cursor/` (or `src/` in public distribution): **MIT License** (see `LICENSE`).
+- `vusinfo` C sources (when bundled under `third_party/vusinfo/`): originally by Yukio Yamamoto; redistributed here under the same MIT License for this project unless a separate file states otherwise.
+
+## Archival scientific documentation and listings
+
+Bundled PDFs and the N51SUB listing photograph are **historical Viking-project / ground-processing materials** previously distributed through UTIG (University of Texas Institute for Geophysics) pages that later disappeared after the responsible investigator retired.
+
+They are included **for scholarly reproducibility of the SEISF decode path**, not as a claim of exclusive ownership. If a rights holder objects, contact the repository maintainers for removal or replacement with a literature pointer.
+
+| Path (typical) | Description |
+|----------------|-------------|
+| `materials/PD7400072.pdf` | Hardware buffer / DAPU readout (SD-37D000 / PD7400072 family) |
+| `materials/VUSFormat.pdf` | VUS / USEIS cassette frame format |
+| `materials/VikingSeisDataSetDescription.pdf` | Seismic data set description |
+| `materials/VikingASCIIFileDescription.pdf` | ASCII EDR-style file description |
+| `materials/N51SUB.jpg` | Photograph of N51SUB assembly listing (SEISDT / UNSCR / BOUT) |
+
+## Cassette data (not redistributed)
+
+UTIG `vkg.*` 8 mm cassette images and NSSDC volumes are **not** shipped in this repository. Obtain them from the original archives under their terms; place locally under `utig/` for tests.

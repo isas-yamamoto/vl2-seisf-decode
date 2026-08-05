@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software or method, please cite it as below."
+title: "Viking Lander 2 SEISF cassette Path-D decoder"
+authors:
+  - family-names: Yamamoto
+    given-names: Yukio
+    affiliation: "Institute of Space and Astronautical Science (ISAS/JAXA)"
+    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"
+version: "0.1.0"
+date-released: "2026-08-05"
+license: MIT
+repository-code: "https://github.com/isas-yamamoto/viking-vl2-seisf-decode"
+abstract: >-
+  Software and materials for unscrambling Viking Lander 2 SEISF (DLT)
+  cassette science buffers into VUS-compatible 2048-bit frames using
+  pair-36 packing and PD7400072 Q=matv page reordering, validated
+  bit-exactly against matching VUS frames.
+keywords:
+  - Viking
+  - Mars
+  - seismology
+  - data recovery
+  - bitstream
+  - digital preservation
+  - reverse engineering

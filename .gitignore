@@ -1,0 +1,6 @@
+utig/
+nssdc/
+__pycache__/
+*.pyc
+.venv/
+*.csv
