@@ -36,7 +36,12 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 | `vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
 | `draft/` | English manuscript outline (AI-venue framing) |
-| `docs/` | Release notes and usage |
+| `docs/` | English primary (`usage.md`, …); Japanese as `*.ja.md` |
+
+## Docs
+
+- English: [docs/usage.md](docs/usage.md), [docs/public-release.md](docs/public-release.md)
+- 日本語: [docs/usage.ja.md](docs/usage.ja.md), [docs/public-release.ja.md](docs/public-release.ja.md)
 
 ## Cite / materials
 

@@ -1,102 +1,102 @@
-# cursor/ 使い方 — Viking Lander 2 (`utig/vkg.*`) デコード
+# Usage — Viking Lander 2 (`utig/vkg.*`) decode
 
-作業ディレクトリはいつもこのフォルダを想定しています。
+Paths below assume the published layout (`src/` next to `docs/`). For the local Viking workspace decoder, use `cursor/` instead of `src/`.
 
 ```bash
-cd /home/yukio/Documents/Viking/cursor
+cd src   # or: cd cursor
 ```
 
-依存は標準ライブラリのみ（Python 3.9+ 想定）。
+Python 3.9+, standard library only.
 
 ---
 
-## データの種類
+## Data types
 
-| ファイル | ラベル | 意味 |
-|----------|--------|------|
-| `../utig/vkg.1`〜`vkg.46` | `DLT…` | **SEISF**（スクランブル付き）。README の主対象 |
-| `../utig/vkg.47`〜`vkg.56` | `VUS…` | **VUS / USEIS**（アンスクランブル済み）。`materials2/vl2_seisf/vusinfo` と同等 |
+| Files | Label | Meaning |
+|-------|--------|---------|
+| `../utig/vkg.1`–`vkg.46` | `DLT…` | **SEISF** (scrambled). Main target of this package |
+| `../utig/vkg.47`–`vkg.56` | `VUS…` | **VUS / USEIS** (unscrambled). Same layout as `vusinfo` |
 
-このツールは両方を同じ CLI から扱います。拡張子ではなく先頭サブグループヘッダで判別します。
+Both tape families share one CLI. Type is detected from the leading subgroup header, not the file extension.
 
----
-
-## ファイル構成
-
-| ファイル | 内容 |
-|----------|------|
-| `decode_vkg.py` | CLI エントリポイント |
-| `vkg_format.py` | カセット／レコード共通レイアウト |
-| `vus_decode.py` | VUS 科学データのビット列デコード |
-| `seisf_decode.py` | SEISF + Path D（pair36 / Q=matv / off=15） |
-| `validate_gold.py` | 金フレーム診断表 + ハードアサート（終了コード） |
-| `test_regression.py` | **固定リグレッション**（unittest） |
+Japanese version: [usage.ja.md](usage.ja.md)
 
 ---
 
-## 動作確認（固定）
+## Source files
 
-データ `../utig/vkg.1` と `../utig/vkg.47` がある状態で:
+| File | Role |
+|------|------|
+| `decode_vkg.py` | CLI entry point |
+| `vkg_format.py` | Cassette / record layout |
+| `vus_decode.py` | VUS science bitstream decode |
+| `seisf_decode.py` | SEISF + Path D (pair36 / Q=matv / off=15) |
+| `validate_gold.py` | Gold-frame diagnostics + hard asserts |
+| `test_regression.py` | Fixed regression suite (unittest) |
+
+---
+
+## Regression checks (fixed)
+
+With `../utig/vkg.1` and `../utig/vkg.47` present:
 
 ```bash
-# 推奨: 一式（金フレーム + 複数フレーム + 境界 + VUS）
+# Full suite (gold frame, multi-frame, boundary, VUS)
 python3 test_regression.py
 
-# 金フレームのみ診断表 + アサート
+# Gold frame only: diagnostics + asserts
 python3 validate_gold.py
 
-# unittest 詳細
+# Verbose unittest
 python3 -m unittest test_regression -v
 ```
 
-終了コード **0 = PASS**、**1 = FAIL**（データ欠落時も 1）。
+Exit **0 = PASS**, **1 = FAIL** (missing data also exits 1).
 
-固定している内容の要約:
-
-| 検査 | 期待 |
-|------|------|
-| Path D 定数 | `bit_offset=15`, drop `(0,1,2,3)`, `Q=matv` |
-| 金 f0 (base=170) | GCSC=125078、science **0 residual**、450B **frame_eq** |
-| 振幅 | X/Y/Z 先頭6が VUS と一致 |
-| レコード0 ヘッダ一致フレーム | Path D 対象はすべて 2048/2048 |
-| base=3530 | レコード境界・先読みで 2048/2048 |
-| VUS vkg.47 f0 | NORMAL / n=83 / GCSC=125078 |
+| Check | Expectation |
+|-------|-------------|
+| Path D constants | `bit_offset=15`, drop `(0,1,2,3)`, `Q=matv` |
+| Gold f0 (`base=170`) | GCSC=125078, science **0 residual**, 450 B **frame_eq** |
+| Amplitudes | First 6 X/Y/Z samples match VUS |
+| Header-matched frames on record 0 | All Path D targets **2048/2048** |
+| `base=3530` | Record boundary + lookahead → **2048/2048** |
+| VUS `vkg.47` f0 | NORMAL / n=83 / GCSC=125078 |
 
 ---
 
-## 基本コマンド
+## Commands
 
-### 1. ファイル構造の表示
+### 1. File structure
 
-サブグループ数・ラベル・レコード長・SEISF フレームの年/DOY 範囲。
+Subgroup count, labels, record length, SEISF year/DOY range:
 
 ```bash
 python3 decode_vkg.py ../utig/vkg.1 --info
 python3 decode_vkg.py ../utig/vkg.47 --info
 ```
 
-### 2. フレーム要約（年・DOY・GCSC・mode）
+### 2. Frame summary (year, DOY, GCSC, mode)
 
 ```bash
-# SEISF（先頭 20 フレーム）
+# SEISF (first 20 frames)
 python3 decode_vkg.py ../utig/vkg.1 --summary --max-frames 20
 
-# VUS（vusinfo の -f に相当）
+# VUS (similar to vusinfo -f)
 python3 decode_vkg.py ../utig/vkg.47 --summary --max-frames 20
 ```
 
-出力例（VUS）:
+Example (VUS):
 
 ```
 frame=    0 year=1976 doy=249 gcsc=  125078 mode=NORMAL n= 83 chg=255 note=
 ```
 
-- `note=seisf+unscr` … SEISF を MAP/UNSCR 経由で読んだもの
-- `note=seisf-raw` … `--raw` 時（スクランブル解除なし）
+- `note=seisf+unscr` — SEISF read via MAP/UNSCR  
+- `note=seisf-raw` — with `--raw` (no unscramble)
 
-### 3. 振幅サンプル表示
+### 3. Amplitude samples
 
-引数なし／`--samples` がデフォルト系。フレーム数を指定しないと SEISF は 3 フレームまで。
+Default mode when no other output flags are set. Use `--max-frames` to bound work.
 
 ```bash
 python3 decode_vkg.py ../utig/vkg.1 --samples --max-frames 3 --limit-per-block 20
@@ -104,20 +104,20 @@ python3 decode_vkg.py ../utig/vkg.47 --samples --max-frames 1 --limit-per-block 
 ```
 
 - NORMAL / HIGH: `sample  amp_x  amp_y  amp_z`
-- EVENT: 各軸の後に axis crossings が続く
+- EVENT: axis-crossing counts follow each axis block
 
-### 4. CSV 出力
+### 4. CSV export
 
 ```bash
 python3 decode_vkg.py ../utig/vkg.1 --csv out_vkg1.csv --max-frames 5
 python3 decode_vkg.py ../utig/vkg.47 --csv out_vkg47.csv --max-frames 10
 ```
 
-列: `frame, block, year, doy, gcsc, mode, sample, amp_x, amp_y, amp_z, axis_x, axis_y, axis_z, note`
+Columns: `frame, block, year, doy, gcsc, mode, sample, amp_x, amp_y, amp_z, axis_x, axis_y, axis_z, note`
 
-### 5. SEISF の MAP をスキップ（デバッグ）
+### 5. Skip SEISF MAP (debug)
 
-ヘッダ構造だけ見る／アンスクランブルを切ってパックをそのまま VUS 形に載せる場合。
+Header structure only, or pack bits into VUS-shaped fields without unscramble:
 
 ```bash
 python3 decode_vkg.py ../utig/vkg.1 --raw --summary --max-frames 5
@@ -125,54 +125,55 @@ python3 decode_vkg.py ../utig/vkg.1 --raw --summary --max-frames 5
 
 ---
 
-## オプション一覧
+## Options
 
-| オプション | 説明 |
-|------------|------|
-| `vkg`（位置引数） | `vkg.N` へのパス |
-| `--info` | カセットサブグループ構成のみ表示 |
-| `--summary` | 年 / DOY / GCSC / mode の 1 行要約 |
-| `--samples` | 振幅を標準出力（他モード未指定時の既定動作） |
-| `--csv PATH` | サンプルを CSV 保存 |
-| `--max-frames N` | 先頭 N フレームだけ処理。**省略時は全フレーム**（上限なし） |
-| `--limit-per-block N` | `--samples` 時、1 ブロックあたり表示サンプル数（既定 20） |
-| `--raw` | SEISF のみ: MAP/UNSCR を行わない |
+| Option | Description |
+|--------|-------------|
+| `vkg` (positional) | Path to `vkg.N` |
+| `--info` | Cassette subgroup structure only |
+| `--summary` | One-line year / DOY / GCSC / mode |
+| `--samples` | Print amplitudes (default if no other mode) |
+| `--csv PATH` | Write samples to CSV |
+| `--max-frames N` | Process only the first N frames. **If omitted, all frames** |
+| `--limit-per-block N` | With `--samples`, samples shown per block (default 20) |
+| `--raw` | SEISF only: skip MAP/UNSCR |
 
 ---
 
-## C 実装（VUS のみ）との比較
+## C decoder (VUS)
 
-アンスクランブル済み VUS は、従来どおり次でも検証できます。
+Unscrambled VUS can also be checked with the bundled `vusinfo` C tools:
 
 ```bash
-cd ../materials2/vl2_seisf/vusinfo
-./vusinfo -f ../../../utig/vkg.47 | head
-./vusinfo -d ../../../utig/vkg.47 | head   # 振幅
+cd ../vusinfo
+make
+./vusinfo -f ../utig/vkg.47 | head
+./vusinfo -d ../utig/vkg.47 | head   # amplitudes
 ```
 
-Python の `--summary` の year / DOY / GCSC / mode は `vusinfo -f` と一致する想定です。
+Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.
 
 ---
 
-## 現状の注意（SEISF）
+## SEISF notes (Path D)
 
-- **ヘッダ（年・DOY）とカセット構造**は `vkg.1`〜`46` で読める。
-- **科学バッファ（Path D・確定）**:
-  - 半語ペア 36bit → **先頭 4bit 破棄** → 32bit 詰め（BLP 系 32/36）
-  - **`Q = matv`**（N51SUB の NBA=matv+9 / NBB=503−matv と一致）
+- **Headers (year, DOY) and cassette structure** are readable on `vkg.1`–`46`.
+- **Science buffer (Path D, production):**
+  - halfword pairs → 36-bit → **drop top 4 bits** → 32 bits (BLP-style 32/36)
+  - **`Q = matv`** (matches N51SUB NBA=matv+9 / NBB=503−matv)
   - **`bit_offset = 15`**
-  - vkg.1↔vkg.47 照合: **2048/2048・フレーム完全一致**（14/14 ほか）
-  - 旧: Q=matv−2 / off=13 → ページ端 ≤8 bit 残差（同じ系の off-by-two）
-  - **レコード境界**: 次レコード半語の先読み（`iter_seisf_frames`）
-  - 照合: `python3 validate_gold.py`
-- N51SUB `BOUT` の命令語シミュレータはヘッダ／NBA・NBB まで一致。ビット挿入手続きは未完（Path E）。
-- 参考: `../materials4/N51SUB.jpg`, `../materials2/doc/`, `../claude/README.md`, `../archives/`
+  - vkg.1↔vkg.47: **2048/2048**, full frame equality where headers match
+  - Earlier near-miss: Q=matv−2 / off=13 → ≤8 residual bits at page edges (same family, off-by-two)
+  - **Record boundaries:** halfword lookahead into the next physical record (`iter_seisf_frames`)
+  - Check: `python3 validate_gold.py`
+- N51SUB `BOUT` micro-simulation matches headers / NBA·NBB; bit-insert path incomplete (Path E).
+- See also: `materials/N51SUB.jpg`, other files under `materials/`, and `NOTICE`.
 
 ---
 
-## 典型的な作業手順
+## Typical workflow
 
-1. `--info` で SEISF/VUS とレコード構成を確認する。  
-2. VUS なら `--summary` / `--csv` で本デコード。  
-3. SEISF ならまずヘッダの年・DOY を `--summary` で確認し、科学値は VUS や nssdc と突き合わせる。  
-4. アンスクランブル実験時は `--raw` と通常実行の差分を見る。
+1. `--info` to confirm SEISF vs VUS and record layout.  
+2. For VUS: `--summary` / `--csv` for production decode.  
+3. For SEISF: check year/DOY with `--summary`, then validate science against VUS (or other archives).  
+4. When experimenting with unscramble, compare `--raw` vs normal output.
