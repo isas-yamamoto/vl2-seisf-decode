@@ -1,30 +1,35 @@
-# Third-party and archival materials
+# Materials notice
 
 ## Software (this repository)
 
-All of the following are first-party project code, released under the **MIT License** (see `LICENSE`):
+| Path | Description | License |
+|------|-------------|---------|
+| `src/` | SEISF Path D decoder (Python) and VUS bit-stream port | MIT (`LICENSE`) |
+| `vusinfo/` | VUS / USEIS cassette decoder (C) by Yukio Yamamoto | MIT (`LICENSE`) |
 
-| Path | Description |
-|------|-------------|
-| `src/` | SEISF Path D decoder and Python VUS port |
-| `vusinfo/` | Original C **VUS / USEIS** cassette decoder (**Yukio Yamamoto**) |
+`src/vus_decode.py` implements the same science bit layout as `vusinfo/`.
 
-The Python module `src/vus_decode.py` is a port of the bit-stream logic in `vusinfo/`.
+## Archival documents (PDFs under `materials/`)
 
-## Archival scientific documentation and listings
+The format and dataset PDFs packaged here:
 
-Bundled PDFs and the N51SUB listing photograph are **historical Viking-project / ground-processing materials** previously distributed through UTIG (University of Texas Institute for Geophysics) pages that later disappeared after the responsible investigator retired.
+- `materials/PD7400072.pdf`
+- `materials/VUSFormat.pdf`
+- `materials/VikingSeisDataSetDescription.pdf`
+- `materials/VikingASCIIFileDescription.pdf`
 
-They are included **for scholarly reproducibility of the SEISF decode path**, not as a claim of exclusive ownership. If a rights holder objects, contact the repository maintainers for removal or replacement with a literature pointer.
+were originally distributed by UTIG at:
 
-| Path (typical) | Description |
-|----------------|-------------|
-| `materials/PD7400072.pdf` | Hardware buffer / DAPU readout (SD-37D000 / PD7400072 family) |
-| `materials/VUSFormat.pdf` | VUS / USEIS cassette frame format |
-| `materials/VikingSeisDataSetDescription.pdf` | Seismic data set description |
-| `materials/VikingASCIIFileDescription.pdf` | ASCII EDR-style file description |
-| `materials/N51SUB.jpg` | Photograph of N51SUB assembly listing (SEISDT / UNSCR / BOUT) |
+**http://www-udc.ig.utexas.edu/external/yosio/Viking/**
+
+That site is no longer available (the related pages disappeared after the investigator’s retirement). Copies are included here for scholarly reproducibility of the SEISF decode path. They are not a claim of exclusive ownership. If a rights holder objects, contact the repository maintainers.
+
+## N51SUB listing photograph
+
+`materials/N51SUB.jpg` was **not** part of the public UTIG web distribution above.
+
+It is a photograph, taken by Yukio Yamamoto, of a paper listing of the N51SUB assembly (SEISDT / UNSCR / BOUT) that was obtained during a past visit to UTIG. Included solely to document the Path D derivation.
 
 ## Cassette data (not redistributed)
 
-UTIG `vkg.*` 8 mm cassette images and NSSDC volumes are **not** shipped in this repository. Obtain them from the original archives under their terms; place locally under `utig/` for tests.
+UTIG `vkg.*` 8 mm cassette images are **not** shipped in this repository. Obtain them under the archive’s terms and place them locally under `utig/` for tests.

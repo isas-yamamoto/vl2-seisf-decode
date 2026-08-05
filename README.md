@@ -41,7 +41,7 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 ## Cite / materials
 
 - `CITATION.cff`
-- Provenance: `NOTICE` (UTIG materials previously public; pages later removed)
+- Provenance: `NOTICE` (UTIG web PDFs; N51SUB photo from paper at UTIG)
 - License: `LICENSE` (MIT for software)
 
 ## Paper draft
