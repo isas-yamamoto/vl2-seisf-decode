@@ -1,35 +1,35 @@
-# Materials notice
+# Notices
 
-## Software (this repository)
+## Software
 
-| Path | Description | License |
-|------|-------------|---------|
-| `src/` | SEISF Path D decoder (Python) and VUS bit-stream port | MIT (`LICENSE`) |
-| `vusinfo/` | VUS / USEIS cassette decoder (C) by Yukio Yamamoto | MIT (`LICENSE`) |
+Software under `src/` and `vusinfo/` is released under the MIT License (see `LICENSE`).
 
-`src/vus_decode.py` implements the same science bit layout as `vusinfo/`.
+| Path | Description |
+|------|-------------|
+| `src/` | SEISF Path D decoder (Python) and VUS bit-layout port |
+| `vusinfo/` | VUS / USEIS cassette decoder in C (Yukio Yamamoto). `src/vus_decode.py` follows the same science bitstream layout. |
 
-## Archival documents (PDFs under `materials/`)
+## Archival documents (PDF)
 
-The format and dataset PDFs packaged here:
-
-- `materials/PD7400072.pdf`
-- `materials/VUSFormat.pdf`
-- `materials/VikingSeisDataSetDescription.pdf`
-- `materials/VikingASCIIFileDescription.pdf`
-
-were originally distributed by UTIG at:
+The following PDFs were originally distributed by UTIG from:
 
 **http://www-udc.ig.utexas.edu/external/yosio/Viking/**
 
-That site is no longer available (the related pages disappeared after the investigator’s retirement). Copies are included here for scholarly reproducibility of the SEISF decode path. They are not a claim of exclusive ownership. If a rights holder objects, contact the repository maintainers.
+That site is no longer available (content disappeared after the responsible investigator retired). Copies are bundled here **for scholarly reproducibility** of the SEISF decode, not as a claim of exclusive ownership. Contact the maintainers if a rights holder requests removal or replacement with a citation-only pointer.
+
+| Path | Description |
+|------|-------------|
+| `materials/PD7400072.pdf` | SD-37D000 / PD7400072 family (hardware buffer / DAPU readout) |
+| `materials/VUSFormat.pdf` | VUS / USEIS cassette frame format |
+| `materials/VikingSeisDataSetDescription.pdf` | Viking seismic data set description |
+| `materials/VikingASCIIFileDescription.pdf` | Viking ASCII file description |
 
 ## N51SUB listing photograph
 
-`materials/N51SUB.jpg` was **not** part of the public UTIG web distribution above.
+`materials/N51SUB.jpg` was **not** published on the UTIG web site above.
 
-It is a photograph, taken by Yukio Yamamoto, of a paper listing of the N51SUB assembly (SEISDT / UNSCR / BOUT) that was obtained during a past visit to UTIG. Included solely to document the Path D derivation.
+It is a photograph taken by Yukio Yamamoto of a paper copy of the N51SUB assembly listing that he held from a past visit to UTIG. Included only to document ground-software structure (SEISDT / UNSCR / BOUT) used in deriving Path D.
 
 ## Cassette data (not redistributed)
 
-UTIG `vkg.*` 8 mm cassette images are **not** shipped in this repository. Obtain them under the archive’s terms and place them locally under `utig/` for tests.
+UTIG `vkg.*` 8 mm cassette images are **not** shipped in this repository. Place them locally under `utig/` for tests, under the terms of the original archive.
