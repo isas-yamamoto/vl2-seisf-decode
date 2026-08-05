@@ -2,8 +2,14 @@
 
 ## Software (this repository)
 
-- Original Python decoder under `cursor/` (or `src/` in public distribution): **MIT License** (see `LICENSE`).
-- `vusinfo` C sources (when bundled under `third_party/vusinfo/`): originally by Yukio Yamamoto; redistributed here under the same MIT License for this project unless a separate file states otherwise.
+All of the following are first-party project code, released under the **MIT License** (see `LICENSE`):
+
+| Path | Description |
+|------|-------------|
+| `src/` | SEISF Path D decoder and Python VUS port |
+| `vusinfo/` | Original C **VUS / USEIS** cassette decoder (**Yukio Yamamoto**) |
+
+The Python module `src/vus_decode.py` is a port of the bit-stream logic in `vusinfo/`.
 
 ## Archival scientific documentation and listings
 

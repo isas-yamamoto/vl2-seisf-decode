@@ -13,8 +13,10 @@
 | GitHub account | **`isas-yamamoto`** |
 | Repository name | **`viking-vl2-seisf-decode`** (recommended) |
 
-**Clone URL (after create):**  
-`https://github.com/isas-yamamoto/viking-vl2-seisf-decode.git`
+**Clone URL:**  
+`https://github.com/isas-yamamoto/viking-vl2-seisf-decode.git`  
+
+**Visibility:** repository is **private** until explicit public release.
 
 ### Alternate names (if primary is taken)
 
@@ -29,8 +31,7 @@ See `scripts/prepare_public_dist.sh` → `public-dist/`:
 - MIT `LICENSE`, `NOTICE`, `CITATION.cff`
 - `src/` decoder + tests
 - `materials/` Tier-A PDFs + `N51SUB.jpg`
-- `third_party/vusinfo/` C reference
-- `draft/` English outline for AI-venue paper
+- `vusinfo/` — original VUS C decoder by Yukio Yamamoto (first-party, MIT)- `draft/` English outline for AI-venue paper
 
 ## What does not ship
 

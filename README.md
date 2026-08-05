@@ -33,8 +33,8 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 | Path | Contents |
 |------|----------|
 | `src/` | Decoder, CLI, regression tests |
+| `vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
-| `third_party/vusinfo/` | Historic VUS C decoder sources |
 | `draft/` | English manuscript outline (AI-venue framing) |
 | `docs/` | Release notes and usage |
 
