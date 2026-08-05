@@ -10,6 +10,22 @@ cd src   # または: cd cursor
 
 英語版: [usage.md](usage.md)
 
+## カセット／フレーム形式図
+
+| 図 | ファイル |
+|----|----------|
+| SEISF / DLT | [figures/fig_seisf_format.png](figures/fig_seisf_format.png) |
+| VUS / USEIS | [figures/fig_vus_format.png](figures/fig_vus_format.png) |
+| SEISF → Path D → VUS | [figures/fig_seisf_vus_bridge.png](figures/fig_seisf_vus_bridge.png) |
+
+![SEISF レイアウト](figures/fig_seisf_format.png)
+
+![VUS レイアウト](figures/fig_vus_format.png)
+
+![Path D 対応](figures/fig_seisf_vus_bridge.png)
+
+索引: [figures/README.md](figures/README.md)。各図に PDF / SVG あり。
+
 ---
 
 ## データの種類
