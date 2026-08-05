@@ -21,6 +21,22 @@ Both tape families share one CLI. Type is detected from the leading subgroup hea
 
 Japanese version: [usage.ja.md](usage.ja.md)
 
+## Cassette / frame formats
+
+| Diagram | File |
+|---------|------|
+| SEISF / DLT | [figures/fig_seisf_format.png](figures/fig_seisf_format.png) |
+| VUS / USEIS | [figures/fig_vus_format.png](figures/fig_vus_format.png) |
+| SEISF → Path D → VUS | [figures/fig_seisf_vus_bridge.png](figures/fig_seisf_vus_bridge.png) |
+
+![SEISF layout](figures/fig_seisf_format.png)
+
+![VUS layout](figures/fig_vus_format.png)
+
+![Path D dual-archive](figures/fig_seisf_vus_bridge.png)
+
+Index: [figures/README.md](figures/README.md). PDF/SVG siblings for each basename.
+
 ---
 
 ## Source files

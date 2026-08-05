@@ -35,7 +35,17 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 | `src/` | Decoder, CLI, regression tests |
 | `vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
-| `docs/` | Operator docs (`usage.md`; Japanese `usage.ja.md`) |
+| `docs/` | Operator docs + **format diagrams** (`docs/figures/`) |
+
+## Format diagrams
+
+| | |
+|--|--|
+| SEISF / DLT | ![SEISF layout](docs/figures/fig_seisf_format.png) |
+| VUS / USEIS | ![VUS layout](docs/figures/fig_vus_format.png) |
+| Path D map | ![SEISF–VUS bridge](docs/figures/fig_seisf_vus_bridge.png) |
+
+Details: [docs/figures/README.md](docs/figures/README.md)
 
 ## Documentation
 
