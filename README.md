@@ -14,6 +14,8 @@ Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTI
 3. Unscramble with PD7400072 order using **Q = matv** (MAP probe), covering all three page-readout cases (Q < 503, Q = 503, Q > 503)
 4. Stitch halfwords across physical record boundaries when needed
 
+`matv` is read from a 512-entry lookup table (an N51SUB "MAP" routine) indexed by a 9-bit field taken from the first two science halfwords; it is used directly as the page pointer Q above (docs/usage.md has the per-case segment-length formulas).
+
 Gold check (local `utig/vkg.1` + `vkg.47`): residual **0/2048**, frame equality, GCSC **125078**.
 
 Across all header-matched SEISF/VUS pairs: **421/423** bit-exact, closing most of the VUS coverage gap (VUS-unique-header coverage **99.0%**; SEISF-unique-header coverage **74.5%**, reflecting SEISF's larger 46-file span vs. VUS's 10).
