@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTIG cassettes (`vkg.1`–`46`), validated against matched **VUS (USEIS)** frames (`vkg.47`–`56`).
+Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTIG cassettes (`vkg.1`–`29`; `vkg.30`–`46` in the same holding are a separate meteorology instrument product, out of scope), validated against matched **VUS (USEIS)** frames (`vkg.47`–`56`).
 
 **Organization:** [isas-yamamoto](https://github.com/isas-yamamoto) · **License:** MIT  
 **Repository:** `https://github.com/isas-yamamoto/vl2-seisf-decode`
@@ -12,13 +12,13 @@ Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTI
 1. Pack consecutive 18-bit halfwords as 36-bit pairs; **drop the top 4 bits** → 32 bits/pair
 2. Stream offset **15**, length 2048
 3. Unscramble with PD7400072 order using **Q = matv** (MAP probe), covering all three page-readout cases (Q < 503, Q = 503, Q > 503)
-4. Stitch halfwords across physical record boundaries when needed
+4. Stitch halfwords across physical record boundaries when needed, dropping the fixed-length leader a record carries when its length is not an exact multiple of the 224-halfword frame stride
 
 `matv` is read from a 512-entry lookup table (an N51SUB "MAP" routine) indexed by a 9-bit field taken from the first two science halfwords; it is used directly as the page pointer Q above (docs/usage.md has the per-case segment-length formulas).
 
 Gold check (local `utig/vkg.1` + `vkg.47`): residual **0/2048**, frame equality, GCSC **125078**.
 
-Across all header-matched SEISF/VUS pairs: **421/423** bit-exact, closing most of the VUS coverage gap (VUS-unique-header coverage **99.0%**; SEISF-unique-header coverage **74.5%**, reflecting SEISF's larger 46-file span vs. VUS's 10).
+Archive-wide bit-exact failure rates: **0.08%** for matv < 503, **0.10%** for matv > 503, and **48.3%** for matv = 503 specifically (a distinct, unresolved decoder limitation — see docs/usage.md). VUS-unique-header coverage is **99.0%**; the SEISF-side matched fraction is **79.0%**, reflecting SEISF's 29-file span (`vkg.1`–`vkg.29`) vs. VUS's 10 (`vkg.47`–`vkg.56`).
 
 ## Quick start
 
