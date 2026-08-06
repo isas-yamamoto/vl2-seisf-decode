@@ -2,7 +2,7 @@
 """
 Gold-frame diagnostics + hard assertions.
 
-Run from cursor/:
+Run from src/:
   python3 validate_gold.py
 
 比較表も出します。アサート失敗時は終了コード 1。

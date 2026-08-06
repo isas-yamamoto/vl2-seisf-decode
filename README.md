@@ -41,7 +41,7 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 | Path | Contents |
 |------|----------|
 | `src/` | Decoder, CLI, regression tests |
-| `vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party |
+| `legacy/vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party; superseded by `src/` |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
 | `docs/` | Operator docs + **format diagrams** (`docs/figures/`) |
 
@@ -59,6 +59,7 @@ Details: [docs/figures/README.md](docs/figures/README.md)
 
 - English: [docs/usage.md](docs/usage.md)
 - 日本語: [docs/usage.ja.md](docs/usage.ja.md)
+- N51SUB technical notes (MAP/SET/SEISDT, not in the paper): [docs/n51sub.md](docs/n51sub.md) · [docs/n51sub.ja.md](docs/n51sub.ja.md)
 
 ## Cite / materials
 

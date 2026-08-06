@@ -160,13 +160,13 @@ python3 decode_vkg.py ../utig/vkg.1 --raw --summary --max-frames 5
 
 ## C 実装（VUS のみ）との比較
 
-アンスクランブル済み VUS は、同梱の `vusinfo` でも検証できます。
+アンスクランブル済み VUS は、同梱の `vusinfo`（レガシー、本パッケージに後継。`legacy/vusinfo/README.md` 参照）でも検証できます。
 
 ```bash
-cd ../vusinfo
+cd ../legacy/vusinfo
 make
-./vusinfo -f ../utig/vkg.47 | head
-./vusinfo -d ../utig/vkg.47 | head   # 振幅
+./vusinfo -f ../../utig/vkg.47 | head
+./vusinfo -d ../../utig/vkg.47 | head   # 振幅
 ```
 
 Python の `--summary` の year / DOY / GCSC / mode は `vusinfo -f` と一致する想定です。

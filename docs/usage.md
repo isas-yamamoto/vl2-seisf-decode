@@ -160,13 +160,14 @@ python3 decode_vkg.py ../utig/vkg.1 --raw --summary --max-frames 5
 
 ## C decoder (VUS)
 
-Unscrambled VUS can also be checked with the bundled `vusinfo` C tools:
+Unscrambled VUS can also be checked with the bundled `vusinfo` C tools
+(legacy, superseded by this package — see `legacy/vusinfo/README.md`):
 
 ```bash
-cd ../vusinfo
+cd ../legacy/vusinfo
 make
-./vusinfo -f ../utig/vkg.47 | head
-./vusinfo -d ../utig/vkg.47 | head   # amplitudes
+./vusinfo -f ../../utig/vkg.47 | head
+./vusinfo -d ../../utig/vkg.47 | head   # amplitudes
 ```
 
 Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.

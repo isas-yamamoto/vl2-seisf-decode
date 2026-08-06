@@ -6,8 +6,8 @@ Match keys (explicitly NOT the 108-byte dual-archive header):
   primary   : IGCSC / first science-block GCSC
   secondary : (IYEAR, IDAY±δ) with GCSC  — DOY may be off by 1 between products
 
-  python3 cursor/coverage_nssdc.py
-  python3 cursor/coverage_nssdc.py --no-seisf   # skip SEISF GCSC pass
+  python3 coverage_nssdc.py
+  python3 coverage_nssdc.py --no-seisf   # skip SEISF GCSC pass
 
 Outputs under draft/figures/:
   coverage_nssdc.json

@@ -3,10 +3,10 @@
 Sample decoder for Viking Lander 2 UTIG cassette files (utig/vkg.*).
 
   vkg.1  - vkg.46  ... SEISF / DLT  (scrambled science buffer; this tool)
-  vkg.47 - vkg.56  ... VUS / USEIS (unscrambled; same path as materials2/vusinfo)
+  vkg.47 - vkg.56  ... VUS / USEIS (unscrambled; same layout as the
+                       vusinfo C decoder, see legacy/vusinfo/)
 
-README targets are vkg.1~vkg.46. Reference working VUS decoder:
-  materials2/vl2_seisf/vusinfo
+README targets are vkg.1~vkg.46.
 
 Examples
 --------
@@ -36,7 +36,7 @@ import csv
 import sys
 from pathlib import Path
 
-# Allow running as script from cursor/
+# Allow running as a script directly (import siblings by path)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from seisf_decode import decode_seisf_file, describe_file, iter_seisf_frames

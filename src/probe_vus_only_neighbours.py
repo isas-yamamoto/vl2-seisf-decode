@@ -7,7 +7,7 @@ Probe: are VUS-only residuals partly SEISF under-detection?
 2) How many unique VUS headers newly match under exhaustive discovery?
 3) For remaining VUS-only, GCSC / (year,doy) neighbourhood on SEISF side.
 
-  python3 cursor/probe_vus_only_neighbours.py
+  python3 probe_vus_only_neighbours.py
 
 Outputs:
   draft/figures/vus_only_neighbour_probe.json

@@ -9,7 +9,7 @@ PASS 条件（データが ../utig/ にあるとき）:
   4. VUS 単独: vkg.47 先頭が NORMAL / n=83
 
 実行:
-  cd cursor/
+  cd src/
   python3 test_regression.py
   python3 -m unittest test_regression -v
 

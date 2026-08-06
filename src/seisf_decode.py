@@ -105,7 +105,7 @@ _MAP_BASE = [
 
 
 def _lls(l: int, ac: int, mq: int, n: int) -> Tuple[int, int, int]:
-    """LLS matching N51SUB test sheet / materials2 seisf/func.py (AC,MQ,L)."""
+    """LLS matching the N51SUB test sheet (AC,MQ,L)."""
     val = ((ac & MASK18) << 19) | ((mq & MASK18) << 1) | (l & 1)
     val = (val << n) & ((1 << 37) - 1)
     l = val & 1

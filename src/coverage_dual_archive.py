@@ -4,9 +4,9 @@ Full dual-archive coverage: SEISF (vkg.1–46) vs VUS (vkg.47–56).
 
 Match key = first 108 bytes of the VUS-shaped engineering header.
 
-  python3 cursor/coverage_dual_archive.py              # headers + bit sample
-  python3 cursor/coverage_dual_archive.py --no-bits
-  python3 cursor/coverage_dual_archive.py --bits-all   # all production-eligible
+  python3 coverage_dual_archive.py              # headers + bit sample
+  python3 coverage_dual_archive.py --no-bits
+  python3 coverage_dual_archive.py --bits-all   # all production-eligible
 
 Outputs under draft/figures/:
   coverage_dual_archive.json

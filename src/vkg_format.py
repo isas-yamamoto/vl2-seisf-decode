@@ -1,7 +1,7 @@
 """
 Viking Lander 2 UTIG cassette (vkg.*) common layout.
 
-Reference (UTIG Tech Report No.118, VUSFormat.pdf, materials2/vl2_seisf):
+Reference (UTIG Tech Report No.118, VUSFormat.pdf; see materials/):
 
   - Each original 7-track tape is one vkg.N file.
   - Multiple subgroups; each subgroup = 1000-byte header + fixed-length data records.

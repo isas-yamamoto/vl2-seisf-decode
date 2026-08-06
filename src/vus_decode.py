@@ -1,7 +1,7 @@
 """
 VUS / USEIS science decoder.
 
-Port of materials2/vl2_seisf/vusinfo (Yukio Yamamoto).
+Port of the vusinfo C decoder (Yukio Yamamoto); see legacy/vusinfo/.
 Validated against `./vusinfo -f utig/vkg.47` frame/GCSC/mode lines.
 """
 
