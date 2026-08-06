@@ -1,9 +1,9 @@
 # Usage — Viking Lander 2 (`utig/vkg.*`) decode
 
-Paths below assume the published layout (`src/` next to `docs/`). For the local Viking workspace decoder, use `cursor/` instead of `src/`.
+Paths below assume the published layout (`src/` next to `docs/`).
 
 ```bash
-cd src   # or: cd cursor
+cd src
 ```
 
 Python 3.9+, standard library only.
@@ -181,10 +181,8 @@ Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.
   - **`Q = matv`** (matches N51SUB NBA=matv+9 / NBB=503−matv)
   - **`bit_offset = 15`**
   - vkg.1↔vkg.47: **2048/2048**, full frame equality where headers match
-  - Earlier near-miss: Q=matv−2 / off=13 → ≤8 residual bits at page edges (same family, off-by-two)
   - **Record boundaries:** halfword lookahead into the next physical record (`iter_seisf_frames`)
   - Check: `python3 validate_gold.py`
-- N51SUB `BOUT` micro-simulation matches headers / NBA·NBB; bit-insert path incomplete (Path E).
 - See also: `materials/N51SUB.jpg`, other files under `materials/`, and `NOTICE`.
 
 ---

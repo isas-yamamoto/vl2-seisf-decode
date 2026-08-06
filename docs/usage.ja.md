@@ -1,9 +1,9 @@
 # 使い方 — Viking Lander 2 (`utig/vkg.*`) デコード
 
-以下は公開レイアウト（`src/` が `docs/` の隣）を想定しています。Viking ワークスペース内のデコーダは `cursor/` を `src/` の代わりに使ってください。
+以下は公開レイアウト（`src/` が `docs/` の隣）を想定しています。
 
 ```bash
-cd src   # または: cd cursor
+cd src
 ```
 
 依存は標準ライブラリのみ（Python 3.9+ 想定）。
@@ -181,10 +181,8 @@ Python の `--summary` の year / DOY / GCSC / mode は `vusinfo -f` と一致�
   - **`Q = matv`**（N51SUB の NBA=matv+9 / NBB=503−matv と一致）
   - **`bit_offset = 15`**
   - vkg.1↔vkg.47 照合: **2048/2048・フレーム完全一致**（ヘッダ一致箇所）
-  - 旧: Q=matv−2 / off=13 → ページ端 ≤8 bit 残差（同じ系の off-by-two）
   - **レコード境界**: 次レコード半語の先読み（`iter_seisf_frames`）
   - 照合: `python3 validate_gold.py`
-- N51SUB `BOUT` の命令語シミュレータはヘッダ／NBA・NBB まで一致。ビット挿入手続きは未完（Path E）。
 - 参考: `materials/N51SUB.jpg`、その他 `materials/`、`NOTICE`
 
 ---
