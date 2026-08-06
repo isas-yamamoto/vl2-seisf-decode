@@ -19,6 +19,8 @@ Python 3.9+, standard library only.
 
 Both tape families share one CLI. Type is detected from the leading subgroup header, not the file extension.
 
+Source: `vkg.1`–`vkg.56` are archived at DARTS (ISAS/JAXA): https://data.darts.isas.jaxa.jp/pub/viking/utig/
+
 Japanese version: [usage.ja.md](usage.ja.md)
 
 ## Cassette / frame formats

@@ -30,6 +30,10 @@ python3 decode_vkg.py ../utig/vkg.1 --summary --max-frames 20
 
 Python 3.9+, standard library only. Cassette images are **not** shipped.
 
+## Data
+
+`vkg.1`–`vkg.56` are archived at DARTS (ISAS/JAXA): https://data.darts.isas.jaxa.jp/pub/viking/utig/
+
 ## Layout
 
 | Path | Contents |

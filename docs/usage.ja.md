@@ -37,6 +37,8 @@ cd src   # または: cd cursor
 
 両方を同じ CLI から扱います。拡張子ではなく先頭サブグループヘッダで判別します。
 
+入手元: `vkg.1`〜`vkg.56` は DARTS（宇宙科学研究所/JAXA）で公開: https://data.darts.isas.jaxa.jp/pub/viking/utig/
+
 ---
 
 ## ファイル構成
