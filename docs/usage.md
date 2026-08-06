@@ -27,13 +27,13 @@ Japanese version: [usage.ja.md](usage.ja.md)
 |---------|------|
 | SEISF / DLT | [figures/fig_seisf_format.png](figures/fig_seisf_format.png) |
 | VUS / USEIS | [figures/fig_vus_format.png](figures/fig_vus_format.png) |
-| SEISF → Path D → VUS | [figures/fig_seisf_vus_bridge.png](figures/fig_seisf_vus_bridge.png) |
+| SEISF → decode → VUS | [figures/fig_seisf_vus_bridge.png](figures/fig_seisf_vus_bridge.png) |
 
 ![SEISF layout](figures/fig_seisf_format.png)
 
 ![VUS layout](figures/fig_vus_format.png)
 
-![Path D dual-archive](figures/fig_seisf_vus_bridge.png)
+![Dual-archive decode](figures/fig_seisf_vus_bridge.png)
 
 Index: [figures/README.md](figures/README.md). PDF/SVG siblings for each basename.
 
@@ -46,7 +46,7 @@ Index: [figures/README.md](figures/README.md). PDF/SVG siblings for each basenam
 | `decode_vkg.py` | CLI entry point |
 | `vkg_format.py` | Cassette / record layout |
 | `vus_decode.py` | VUS science bitstream decode |
-| `seisf_decode.py` | SEISF + Path D (pair36 / Q=matv / off=15) |
+| `seisf_decode.py` | SEISF decode (pair36 / Q=matv / off=15) |
 | `validate_gold.py` | Gold-frame diagnostics + hard asserts |
 | `test_regression.py` | Fixed regression suite (unittest) |
 
@@ -71,10 +71,10 @@ Exit **0 = PASS**, **1 = FAIL** (missing data also exits 1).
 
 | Check | Expectation |
 |-------|-------------|
-| Path D constants | `bit_offset=15`, drop `(0,1,2,3)`, `Q=matv` |
+| Decode constants | `bit_offset=15`, drop `(0,1,2,3)`, `Q=matv` |
 | Gold f0 (`base=170`) | GCSC=125078, science **0 residual**, 450 B **frame_eq** |
 | Amplitudes | First 6 X/Y/Z samples match VUS |
-| Header-matched frames on record 0 | All Path D targets **2048/2048** |
+| Header-matched frames on record 0 | All decode targets **2048/2048** |
 | `base=3530` | Record boundary + lookahead → **2048/2048** |
 | VUS `vkg.47` f0 | NORMAL / n=83 / GCSC=125078 |
 
@@ -171,10 +171,10 @@ Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.
 
 ---
 
-## SEISF notes (Path D)
+## SEISF notes
 
 - **Headers (year, DOY) and cassette structure** are readable on `vkg.1`–`46`.
-- **Science buffer (Path D, production):**
+- **Science buffer (production):**
   - halfword pairs → 36-bit → **drop top 4 bits** → 32 bits (BLP-style 32/36)
   - **`Q = matv`** (matches N51SUB NBA=matv+9 / NBB=503−matv)
   - **`bit_offset = 15`**

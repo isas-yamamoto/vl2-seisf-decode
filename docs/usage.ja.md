@@ -16,13 +16,13 @@ cd src   # または: cd cursor
 |----|----------|
 | SEISF / DLT | [figures/fig_seisf_format.png](figures/fig_seisf_format.png) |
 | VUS / USEIS | [figures/fig_vus_format.png](figures/fig_vus_format.png) |
-| SEISF → Path D → VUS | [figures/fig_seisf_vus_bridge.png](figures/fig_seisf_vus_bridge.png) |
+| SEISF → デコード → VUS | [figures/fig_seisf_vus_bridge.png](figures/fig_seisf_vus_bridge.png) |
 
 ![SEISF レイアウト](figures/fig_seisf_format.png)
 
 ![VUS レイアウト](figures/fig_vus_format.png)
 
-![Path D 対応](figures/fig_seisf_vus_bridge.png)
+![デコード対応](figures/fig_seisf_vus_bridge.png)
 
 索引: [figures/README.md](figures/README.md)。各図に PDF / SVG あり。
 
@@ -46,7 +46,7 @@ cd src   # または: cd cursor
 | `decode_vkg.py` | CLI エントリポイント |
 | `vkg_format.py` | カセット／レコード共通レイアウト |
 | `vus_decode.py` | VUS 科学データのビット列デコード |
-| `seisf_decode.py` | SEISF + Path D（pair36 / Q=matv / off=15） |
+| `seisf_decode.py` | SEISF デコード（pair36 / Q=matv / off=15） |
 | `validate_gold.py` | 金フレーム診断表 + ハードアサート（終了コード） |
 | `test_regression.py` | **固定リグレッション**（unittest） |
 
@@ -71,10 +71,10 @@ python3 -m unittest test_regression -v
 
 | 検査 | 期待 |
 |------|------|
-| Path D 定数 | `bit_offset=15`, drop `(0,1,2,3)`, `Q=matv` |
+| デコード定数 | `bit_offset=15`, drop `(0,1,2,3)`, `Q=matv` |
 | 金 f0 (base=170) | GCSC=125078、science **0 residual**、450B **frame_eq** |
 | 振幅 | X/Y/Z 先頭6が VUS と一致 |
-| レコード0 ヘッダ一致フレーム | Path D 対象はすべて 2048/2048 |
+| レコード0 ヘッダ一致フレーム | デコード対象はすべて 2048/2048 |
 | base=3530 | レコード境界・先読みで 2048/2048 |
 | VUS vkg.47 f0 | NORMAL / n=83 / GCSC=125078 |
 
@@ -174,7 +174,7 @@ Python の `--summary` の year / DOY / GCSC / mode は `vusinfo -f` と一致�
 ## 現状の注意（SEISF）
 
 - **ヘッダ（年・DOY）とカセット構造**は `vkg.1`〜`46` で読める。
-- **科学バッファ（Path D・確定）**:
+- **科学バッファ（確定）**:
   - 半語ペア 36bit → **先頭 4bit 破棄** → 32bit 詰め（BLP 系 32/36）
   - **`Q = matv`**（N51SUB の NBA=matv+9 / NBB=503−matv と一致）
   - **`bit_offset = 15`**

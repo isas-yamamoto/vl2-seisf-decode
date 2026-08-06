@@ -1,4 +1,4 @@
-# Viking Lander 2 SEISF cassette decoder (Path D)
+# Viking Lander 2 SEISF cassette decoder
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -7,7 +7,7 @@ Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTI
 **Organization:** [isas-yamamoto](https://github.com/isas-yamamoto) · **License:** MIT  
 **Repository:** `https://github.com/isas-yamamoto/vl2-seisf-decode`
 
-## Path D (summary)
+## Decode pipeline (summary)
 
 1. Pack consecutive 18-bit halfwords as 36-bit pairs; **drop the top 4 bits** → 32 bits/pair
 2. Stream offset **15**, length 2048
@@ -45,7 +45,7 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 |--|--|
 | SEISF / DLT | ![SEISF layout](docs/figures/fig_seisf_format.png) |
 | VUS / USEIS | ![VUS layout](docs/figures/fig_vus_format.png) |
-| Path D map | ![SEISF–VUS bridge](docs/figures/fig_seisf_vus_bridge.png) |
+| Dual-archive map | ![SEISF–VUS bridge](docs/figures/fig_seisf_vus_bridge.png) |
 
 Details: [docs/figures/README.md](docs/figures/README.md)
 
