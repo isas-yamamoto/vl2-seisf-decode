@@ -9,7 +9,7 @@ authors:
 version: "0.1.0"
 date-released: "2026-08-05"
 license: MIT
-repository-code: "https://github.com/isas-yamamoto/viking-vl2-seisf-decode"
+repository-code: "https://github.com/isas-yamamoto/vl2-seisf-decode"
 abstract: >-
   Software and materials for unscrambling Viking Lander 2 SEISF (DLT)
   cassette science buffers into VUS-compatible 2048-bit frames using

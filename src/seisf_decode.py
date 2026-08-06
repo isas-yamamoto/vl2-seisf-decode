@@ -30,6 +30,9 @@ Status (2026-08):
     next-record halfword lookahead for record-boundary frames.
   - Earlier Q=matv−2 / off=13 left ≤8 page-edge residuals (off-by-two of
     the same pairing). Structural N51SUB BOUT still open as Path E.
+  - Frame-header discovery: the header word-1 gate accepts 0o000/0o100/0o200
+    (not only 0o100); see _VALID_HI_WORDS. Recovers ~23% more header-matched
+    pairs on vkg.1 subgroup 0 (380→423) with no change to bit-exact results.
 """
 
 from __future__ import annotations
@@ -158,13 +161,25 @@ class SeisfFrameLoc:
     file_byte_hint: int  # absolute file offset when available
 
 
+# Word1 (``hi``) of a real frame header is not the single fixed sync value
+# 0o100 assumed from the gold frame alone: a corpus survey restricted to
+# lo == 0o504 (the gold frame's word-2 value) plus a valid BCD year/DOY found
+# hi in {0o000, 0o100, 0o200} occurring in the thousands on vkg.1/26/29,
+# against a long tail of other hi values occurring at most 6 times each in a
+# multi-million-halfword scan (consistent with rare BCD coincidences, not
+# real headers). hi therefore looks like a small counter/flag shifted into
+# the top bits (0, 1, 2 << 6) rather than a constant marker.
+_VALID_HI_WORDS = (0, 0o100, 0o200)
+
+
 def looks_like_seisf_frame_header(halfwords: Sequence[int], base: int) -> bool:
     """Heuristic for SEISF eng-format frame start (word1 high/low)."""
     if base + SEISF_HEADER_HALFWORDS > len(halfwords):
         return False
     hi, lo = halfwords[base], halfwords[base + 1]
-    # Gold / typical: 000100 000504 (octal) — logical record marker
-    if hi != 0o100:
+    # Gold / typical: 000100 000504 (octal) — logical record marker.
+    # See _VALID_HI_WORDS above: hi also legitimately takes 0o000 / 0o200.
+    if hi not in _VALID_HI_WORDS:
         return False
     if not (0 < lo < 0o10000):
         return False
@@ -181,28 +196,36 @@ def looks_like_seisf_frame_header(halfwords: Sequence[int], base: int) -> bool:
     return True
 
 
-def find_seisf_frame_bases(halfwords: Sequence[int]) -> list[int]:
-    """Return halfword indices of SEISF science frames inside one physical record body."""
+def find_seisf_frame_bases(
+    halfwords: Sequence[int],
+    *,
+    start_limit: Optional[int] = None,
+) -> list[int]:
+    """Return halfword indices of SEISF science frames in a halfword buffer.
+
+    Scans **every** halfword offset with ``looks_like_seisf_frame_header``
+    (dense discovery). Earlier production scans used pitch-224 preferred phase
+    and returned as soon as any phase found a base; that skipped off-pitch
+    headers coexisting with on-pitch ones and inflated VUS-only residuals
+    (~39% of former VUS-only recovered by exhaustive harvest).
+
+    ``start_limit`` (optional) restricts accepted *starts* to bases in
+    ``[0, start_limit)`` so a caller can append following-record halfwords for
+    header validation at the trailing edge without attributing those starts to
+    the next physical record. Validation still uses the full extended buffer.
+    """
+    max_start = len(halfwords) - SEISF_HEADER_HALFWORDS
+    if max_start < 0:
+        return []
+    if start_limit is not None:
+        max_start = min(max_start, start_limit - 1)
+    if max_start < 0:
+        return []
     bases: list[int] = []
-    # Preferred pitch: start around the known first-frame offset, step 224
-    for base in range(
-        SEISF_FIRST_FRAME_HALFWORDS_OFFSET,
-        len(halfwords) - SEISF_HEADER_HALFWORDS,
-        SEISF_HALFWORDS_PER_FRAME,
-    ):
+    for base in range(0, max_start + 1):
         if looks_like_seisf_frame_header(halfwords, base):
             bases.append(base)
-    if bases:
-        return bases
-    # Fallback: scan halfword-aligned candidates at stride 224 from each offset
-    for phase in range(SEISF_HALFWORDS_PER_FRAME):
-        for base in range(phase, len(halfwords) - SEISF_HEADER_HALFWORDS, SEISF_HALFWORDS_PER_FRAME):
-            if looks_like_seisf_frame_header(halfwords, base):
-                if not bases or base - bases[-1] >= SEISF_HALFWORDS_PER_FRAME // 2:
-                    bases.append(base)
-        if bases:
-            break
-    return sorted(bases)
+    return bases
 
 
 def seisf_frame_header_bytes(halfwords: Sequence[int], base: int) -> bytes:
@@ -499,23 +522,39 @@ def n51_unscramble_2048(halfwords: Sequence[int], frame_base: int) -> list[int]:
 
 def pd7400072_readout_order(q: int) -> list[int]:
     """
-    DAPU readout order for Q < 503 (PD7400072), as 0-based buffer indices.
+    DAPU readout order (PD7400072 Section 3.1.1.5.4.4.2), as 0-based buffer indices.
 
-    For each of 4 pages of 512 bits (1-based page base B = k*512):
-      (Q+10+B) .. ((k+1)*512)   length 503-Q
-      (B+1)    .. (Q+9+B)       length Q+9
-    (Q==503 → identity; Q>503 path not used here.)
+    Source (FromSD-37D000&PD7400072.pdf, sheet 19, "Sequence of Read-Out From
+    the Buffer"), 1-indexed buffer bit numbers, per page base B = k*512
+    (k = 0..3):
+
+      Q < 503:  bit(Q+10+B) .. bit(512+B), then bit(1+B) .. bit(Q+9+B)
+      Q > 503:  bit(Q-502+B) .. bit(512+B), then bit(1+B) .. bit(Q-503+B)
+      Q == 503: bit(1) .. bit(2048)  (identity)
+
+    Q is the 9-bit DAPU buffer pointer (0-503 for the "less than" case;
+    504-511 for the "greater than" case per the 9-bit field range), read
+    directly from the data as `matv` (Q == matv, validated for 0 < Q < 503
+    against 366 header-matched SEISF/VUS pairs; the same Q == matv mapping is
+    used here for Q > 503, since matv is the raw probed hardware pointer in
+    both regimes).
     """
     if q == 503:
         return list(range(2048))
-    if not (0 <= q < 503):
-        q = max(0, min(502, q))
     order: list[int] = []
-    for k in range(4):
-        b = k * 512
-        # high part of page then low part (matches PDF + N51SUB NBA/NBB sizes)
-        order.extend(range(q + 10 + b - 1, (k + 1) * 512))
-        order.extend(range(b, q + 9 + b))
+    if q < 503:
+        q = max(0, min(502, q))
+        for k in range(4):
+            b = k * 512
+            # high part of page then low part (matches PDF + N51SUB NBA/NBB sizes)
+            order.extend(range(q + 10 + b - 1, (k + 1) * 512))
+            order.extend(range(b, q + 9 + b))
+    else:
+        q = max(504, min(511, q))
+        for k in range(4):
+            b = k * 512
+            order.extend(range(q - 502 + b - 1, b + 512))
+            order.extend(range(b, q - 503 + b))
     return order
 
 
@@ -549,7 +588,11 @@ def estimate_q_from_matv(halfwords: Sequence[int], frame_base: int) -> Tuple[int
     are exactly PD7400072 lengths for **Q = matv**. Path D (pair36 packing)
     matches VUS bit-for-bit with this Q and bit_offset=15.
 
-    Returns (q_primary, matv) where q_primary = matv when 0 < matv < 503.
+    Returns (q_primary, matv) where q_primary = matv for all matv in
+    [1, 511] (Q == matv throughout: validated for 0 < matv < 503 against
+    366 header-matched pairs; matv == 503 is the PD7400072 identity case;
+    504 <= matv <= 511 uses the PD7400072 "Q > 503" formula -- see
+    `pd7400072_readout_order`).
     """
     data_base = frame_base + SEISF_HEADER_HALFWORDS
     if data_base + 1 >= len(halfwords):
@@ -557,9 +600,9 @@ def estimate_q_from_matv(halfwords: Sequence[int], frame_base: int) -> Tuple[int
     matv, _ = _mat_probe(halfwords, data_base)
     if matv <= 0:
         matv = 503
-    if matv >= 503:
-        return 502 if matv > 503 else 503, matv
-    return max(0, min(502, matv)), matv
+    if matv > 511:
+        matv = 511
+    return matv, matv
 
 
 def estimate_q18_from_matv(halfwords: Sequence[int], frame_base: int) -> Tuple[int, int]:
@@ -635,7 +678,12 @@ def map_unscramble_data_bits(
             candidates.append((flipped, bonus - 30))  # flip rarely needed for pair36
 
     # --- Path D primary: pair36 drop(0..3), Q=matv, off=15 ---
-    if 0 < matv < 503:
+    # Covers the full valid matv range [1, 511] returned by estimate_q_from_matv:
+    # Q<503 (validated), Q==503 (identity), and Q in [504,511] (PD7400072
+    # "Q>503" formula). In practice matv is always in this range once the
+    # probe succeeds, so this branch is now the only one taken; the scored
+    # fallback ensemble below is retained as a defensive dead path.
+    if 0 < matv <= 511:
         s_primary = _halfwords_pair36_stream(
             halfwords,
             frame_base,
@@ -888,11 +936,21 @@ def iter_seisf_frames(
             records.append(body_to_halfwords(body[pos : pos + rlen]))
             pos += rlen
         for ri, hs0 in enumerate(records):
-            for base in find_seisf_frame_bases(hs0):
+            # Extend enough for trailing-edge header BCD (year/DOY) and for
+            # science packing after each discovered base.
+            search_need = len(hs0) + SEISF_HEADER_HALFWORDS + 8
+            hs_search = (
+                list(hs0)
+                if len(hs0) >= search_need
+                else extend_halfwords_across_records(records, ri, search_need)
+            )
+            for base in find_seisf_frame_bases(
+                hs_search, start_limit=len(hs0)
+            ):
                 need = halfwords_span_for_frame(base)
                 hs = (
-                    list(hs0)
-                    if len(hs0) >= need
+                    hs_search
+                    if len(hs_search) >= need
                     else extend_halfwords_across_records(records, ri, need)
                 )
                 file_off = hdr.file_offset + 1000 + ri * rlen + base * 3

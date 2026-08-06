@@ -5,16 +5,18 @@
 Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTIG cassettes (`vkg.1`–`46`), validated against matched **VUS (USEIS)** frames (`vkg.47`–`56`).
 
 **Organization:** [isas-yamamoto](https://github.com/isas-yamamoto) · **License:** MIT  
-**Repository:** `https://github.com/isas-yamamoto/viking-vl2-seisf-decode`
+**Repository:** `https://github.com/isas-yamamoto/vl2-seisf-decode`
 
 ## Path D (summary)
 
 1. Pack consecutive 18-bit halfwords as 36-bit pairs; **drop the top 4 bits** → 32 bits/pair
 2. Stream offset **15**, length 2048
-3. Unscramble with PD7400072 order using **Q = matv** (MAP probe)
+3. Unscramble with PD7400072 order using **Q = matv** (MAP probe), covering all three page-readout cases (Q < 503, Q = 503, Q > 503)
 4. Stitch halfwords across physical record boundaries when needed
 
 Gold check (local `utig/vkg.1` + `vkg.47`): residual **0/2048**, frame equality, GCSC **125078**.
+
+Across all header-matched SEISF/VUS pairs: **421/423** bit-exact, closing most of the VUS coverage gap (VUS-unique-header coverage **99.0%**; SEISF-unique-header coverage **74.5%**, reflecting SEISF's larger 46-file span vs. VUS's 10).
 
 ## Quick start
 

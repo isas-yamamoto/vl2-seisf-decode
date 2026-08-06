@@ -210,6 +210,40 @@ class TestPathDRegression(unittest.TestCase):
         self.assertEqual(mism, 0)
         self.assertEqual(seisf_frame_to_vus_bytes(hs, base), fr)
 
+    # ----- matv == 503 and matv > 503 (PD7400072 Q==503 identity / Q>503) -----
+
+    def test_matv_gt_503_bit_perfect(self) -> None:
+        """PD7400072 "Q > 503" 読み出し式: レコード1 base=1962 は matv=508。"""
+        ri, base = 1, 1962
+        hs = self._hs_for(ri, base)
+        hdr = bytes(seisf_frame_header_bytes(hs, base))
+        self.assertIn(hdr, self.vus, "expected header-matched fixture pair")
+        fr = self.vus[hdr]
+        q, matv = estimate_q_from_matv(hs, base)
+        self.assertEqual(matv, 508)
+        self.assertEqual(q, 508)  # Q == matv, no more clamp-to-502
+        bits = map_unscramble_data_bits(hs, base)
+        vb = make_bit_stream(fr)[648 : 648 + 2048]
+        mism = sum(1 for a, b in zip(bits, vb) if a != b)
+        self.assertEqual(mism, 0, f"Q>503 science residual bits: {mism}")
+        self.assertEqual(seisf_frame_to_vus_bytes(hs, base), fr)
+
+    def test_matv_eq_503_identity_bit_perfect(self) -> None:
+        """PD7400072 "Q == 503" 恒等読み出し: レコード6 base=1514 は matv=503。"""
+        ri, base = 6, 1514
+        hs = self._hs_for(ri, base)
+        hdr = bytes(seisf_frame_header_bytes(hs, base))
+        self.assertIn(hdr, self.vus, "expected header-matched fixture pair")
+        fr = self.vus[hdr]
+        q, matv = estimate_q_from_matv(hs, base)
+        self.assertEqual(matv, 503)
+        self.assertEqual(q, 503)
+        bits = map_unscramble_data_bits(hs, base)
+        vb = make_bit_stream(fr)[648 : 648 + 2048]
+        mism = sum(1 for a, b in zip(bits, vb) if a != b)
+        self.assertEqual(mism, 0, f"Q==503 science residual bits: {mism}")
+        self.assertEqual(seisf_frame_to_vus_bytes(hs, base), fr)
+
     # ----- VUS smoke -----
 
     def test_long_run_no_crash(self) -> None:
