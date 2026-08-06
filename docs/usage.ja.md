@@ -184,7 +184,7 @@ Python の `--summary` の year / DOY / GCSC / mode は `vusinfo -f` と一致�
   - 224半語のフレーム周期の整数倍でないレコード長は固定長のリーダー部を持ち、継続レコードごとに詰め込み前に読み飛ばす必要がある
   - vkg.1↔vkg.47 照合: **2048/2048・フレーム完全一致**（ヘッダ一致箇所）
   - **レコード境界**: 次レコード半語の先読み（`iter_seisf_frames`）
-  - archive全体のbit-exact失敗率: matv < 503で**0.08%**、matv > 503で**0.10%**、matv = 503で**48.3%**（未解決）
+  - archive全体のbit-exact失敗率: matv < 503で**0.08%**、matv = 503で**0.13%**、matv > 503で**0.11%**（3つとも同等に信頼できる。レコードごとの最後のチェーンフレーム位置にわずかな残差が残る）
   - 照合: `python3 validate_gold.py`
 - 参考: `materials/N51SUB.jpg`、その他 `materials/`、`NOTICE`
 

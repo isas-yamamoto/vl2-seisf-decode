@@ -184,7 +184,7 @@ Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.
   - **`bit_offset = 15`**
   - records not an exact multiple of the 224-halfword frame stride carry a fixed leader that must be dropped from each continuation record before packing
   - vkg.1↔vkg.47: **2048/2048**, full frame equality where headers match
-  - archive-wide bit-exact failure rate: **0.08%** for matv < 503, **0.10%** for matv > 503, **48.3%** for matv = 503 (unresolved)
+  - archive-wide bit-exact failure rate: **0.08%** for matv < 503, **0.13%** for matv = 503, **0.11%** for matv > 503 (all three equally reliable; a small residual remains at the last chained-frame position per record)
   - **Record boundaries:** halfword lookahead into the next physical record (`iter_seisf_frames`)
   - Check: `python3 validate_gold.py`
 - See also: `materials/N51SUB.jpg`, other files under `materials/`, and `NOTICE`.

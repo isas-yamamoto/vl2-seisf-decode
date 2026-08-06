@@ -18,7 +18,7 @@ Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTI
 
 Gold check (local `utig/vkg.1` + `vkg.47`): residual **0/2048**, frame equality, GCSC **125078**.
 
-Archive-wide bit-exact failure rates: **0.08%** for matv < 503, **0.10%** for matv > 503, and **48.3%** for matv = 503 specifically (a distinct, unresolved decoder limitation — see docs/usage.md). VUS-unique-header coverage is **99.0%**; the SEISF-side matched fraction is **79.0%**, reflecting SEISF's 29-file span (`vkg.1`–`vkg.29`) vs. VUS's 10 (`vkg.47`–`vkg.56`).
+Archive-wide bit-exact failure rates: **0.08%** for matv < 503, **0.13%** for matv = 503, and **0.11%** for matv > 503 — all three page-readout cases essentially equally reliable (see docs/usage.md for the small residual that remains). VUS-unique-header coverage is **99.0%**; the SEISF-side matched fraction is **79.0%**, reflecting SEISF's 29-file span (`vkg.1`–`vkg.29`) vs. VUS's 10 (`vkg.47`–`vkg.56`).
 
 ## Quick start
 

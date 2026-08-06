@@ -86,15 +86,26 @@ RESET; LAC KOUT; DAC* (12; LAW -31; DAC BCT#; JMP* RESET
 `MAP` builds a 512-slot lookup table, `MAT[]`, from 29 octal constants
 (`BASE`). For each constant it loads it into `MQ` and, 18 times, left-shifts
 a running 9-bit `TEMP` register by one bit (feeding in `MQ`'s vacated bit),
-then stores the *sequence index* `Q` (running from `-511` up to `0`) into
-`MAT[TEMP]`. The net effect: `MAT[]` is a fixed permutation table that maps
-a 9-bit probe value (derived from the first two words of the scrambled
-buffer) to a value in `[1, 511]` — the page pointer this decoder calls
-`matv`.
+then stores the *sequence index* `Q` (running from `-511` up to `0`
+inclusive — 512 values) into `MAT[TEMP]`. The net effect: `MAT[]` is a
+fixed permutation table that maps a 9-bit probe value (derived from the
+first two words of the scrambled buffer) to a value in `[1, 512]` — the
+page pointer this decoder calls `matv`.
 
-`build_map_table()` in `src/seisf_decode.py` reimplements this loop exactly
+`build_map_table()` in `src/seisf_decode.py` reimplements this loop
 (same `_MAP_BASE` octal constants, same shift-and-store logic) and produces
 the identical `MAT[]` table used by the production decoder's `_mat_probe()`.
+An earlier version of this reimplementation stopped the loop one iteration
+too early (as soon as `Q` reached `0`, before storing that final entry),
+leaving exactly one 9-bit index unassigned at its zero-initialized default;
+`estimate_q_from_matv()`'s `matv <= 0` fallback then silently mapped that
+one missing index to `matv = 503` (the identity/no-reordering case) instead
+of its correct value, `matv = 512`. Since `matv = 512` and `matv = 503`
+require different unscrambling (segment lengths 503/9 per page vs. a flat
+identity pass), every frame probing to that one index decoded incorrectly.
+This was the entire mechanism behind `matv = 503`'s roughly 48%
+archive-wide bit-exact failure rate reported in earlier versions of the
+accompanying paper.
 
 ## SET — one-time PDP-15 bookkeeping
 
