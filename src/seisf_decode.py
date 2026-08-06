@@ -228,6 +228,37 @@ def find_seisf_frame_bases(
     return bases
 
 
+def chained_seisf_frame_bases(
+    bases: Sequence[int],
+    *,
+    pitch: int = SEISF_HALFWORDS_PER_FRAME,
+    max_missing: int = 1,
+) -> list[int]:
+    """Drop bases from ``find_seisf_frame_bases`` with no same-record neighbour.
+
+    Real frames sit on a fixed ``pitch``-halfword stride within one physical
+    record (inter-record phase may legitimately drift due to dummy-word
+    padding, so this check is local to the ``bases`` list of a single
+    record). A base is kept if some other base in the list is exactly
+    ``k * pitch`` away for ``k`` in ``1 .. max_missing + 1`` (tolerating up
+    to ``max_missing`` consecutive dropped real frames); bases with no such
+    neighbour are isolated -- almost always the dense (every-halfword)
+    finder hitting a coincidental header-shaped match inside real,
+    noise-like science bits rather than a genuine frame. See
+    draft/AUTHOR_NOTES.md item 11: archive-wide this is ~5.5% of accepted
+    bases but only ~0.02% of VUS-header-matched pairs.
+    """
+    bset = set(bases)
+    return [
+        b
+        for b in bases
+        if any(
+            (b + k * pitch) in bset or (b - k * pitch) in bset
+            for k in range(1, max_missing + 2)
+        )
+    ]
+
+
 def seisf_frame_header_bytes(halfwords: Sequence[int], base: int) -> bytes:
     """108-byte SEISF/VUS-compatible header from 36 halfwords."""
     return halfwords_to_frame_bytes(list(halfwords[base : base + SEISF_HEADER_HALFWORDS]))
@@ -901,27 +932,56 @@ def extend_halfwords_across_records(
     Build a halfword array starting at records[record_index], appending
     subsequent physical records until len >= need_len (or body ends).
 
-    SEISF science frames near the end of a 10752-byte record can spill into
-    the next record; pair36 packing needs ~168 halfwords past the header start.
+    SEISF science frames near the end of a record can spill into the next
+    record; pair36 packing needs ~168 halfwords past the header start.
+
+    Records whose halfword length is not an exact multiple of
+    SEISF_HALFWORDS_PER_FRAME (224) -- e.g. RSIZE=10764 bytes = 3588
+    halfwords = 16*224+4 -- carry a fixed-size leader at the start of every
+    record equal to that remainder. The leader is not part of the frame
+    stream, so it must be dropped from each *appended* record or the spliced
+    tail is shifted by the leader length and fails to unscramble (see
+    draft/AUTHOR_NOTES.md item 18/19).
     """
     if record_index < 0 or record_index >= len(records):
         return []
     out = list(records[record_index])
     ri = record_index + 1
     while len(out) < need_len and ri < len(records):
-        out.extend(records[ri])
+        nxt = records[ri]
+        leader = len(nxt) % SEISF_HALFWORDS_PER_FRAME
+        out.extend(nxt[leader:])
         ri += 1
     return out
 
 
 def iter_seisf_frames(
     path: str,
-) -> Iterator[Tuple[SeisfFrameLoc, List[int], bytes]]:
+    *,
+    require_chained: bool = False,
+) -> Iterator[Tuple[SeisfFrameLoc, List[int], bytes, bool]]:
     """
-    Yield (location, halfword_view, frame_header_bytes) for each SEISF science
-    frame. halfword_view starts at the physical record that owns the frame
-    header and may include following records so science packing does not
-    truncate at the record boundary.
+    Yield (location, halfword_view, frame_header_bytes, chained) for each
+    SEISF science frame. halfword_view starts at the physical record that
+    owns the frame header and may include following records so science
+    packing does not truncate at the record boundary. ``chained`` is True
+    iff another accepted base in the same record is exactly k*224
+    halfwords away (see ``chained_seisf_frame_bases``); an isolated base is
+    usually -- but NOT always -- a coincidental match inside real science
+    bits rather than a genuine frame (see draft/AUTHOR_NOTES.md item 12:
+    roughly 40% of isolated-but-VUS-header-matched bases in a full-archive
+    check turned out to be genuine bit-exact frames). Treat ``chained`` as
+    a heuristic signal, not ground truth; verify with a bit-exact check
+    against a candidate VUS match when one is available before excluding a
+    base on this basis alone.
+
+    ``require_chained=True`` drops non-chained bases outright -- use only
+    when a false-negative rate on isolated-but-genuine bases is acceptable
+    (e.g. a quick approximate tally). Prefer ``require_chained=False`` and
+    inspecting the yielded ``chained`` flag when you can afford to verify
+    isolated, header-matched bases individually. Default is False so
+    existing callers (decode, regression tests) keep scanning every
+    accepted base.
     """
     raw, subgroups = open_vkg(path)
     for si, (hdr, body) in enumerate(subgroups):
@@ -944,9 +1004,12 @@ def iter_seisf_frames(
                 if len(hs0) >= search_need
                 else extend_halfwords_across_records(records, ri, search_need)
             )
-            for base in find_seisf_frame_bases(
-                hs_search, start_limit=len(hs0)
-            ):
+            record_bases = find_seisf_frame_bases(hs_search, start_limit=len(hs0))
+            chained_set = set(chained_seisf_frame_bases(record_bases))
+            for base in record_bases:
+                chained = base in chained_set
+                if require_chained and not chained:
+                    continue
                 need = halfwords_span_for_frame(base)
                 hs = (
                     hs_search
@@ -956,7 +1019,7 @@ def iter_seisf_frames(
                 file_off = hdr.file_offset + 1000 + ri * rlen + base * 3
                 loc = SeisfFrameLoc(si, ri, base, file_off)
                 header = seisf_frame_header_bytes(hs, base)
-                yield loc, hs, header
+                yield loc, hs, header, chained
 
 
 def decode_seisf_file(
@@ -976,7 +1039,7 @@ def decode_seisf_file(
     rather than raising.
     """
     count = 0
-    for loc, hs, header in iter_seisf_frames(path):
+    for loc, hs, header, _chained in iter_seisf_frames(path):
         year, doy = parse_seisf_header_fields(header + bytes(342))
         note = "seisf+unscr" if unscramble else "seisf-raw"
         try:

@@ -236,7 +236,7 @@ def index_seisf_gcsc(limit_bases: Optional[int] = None) -> Dict[str, object]:
     for path in seisf_paths():
         name = path.name
         n_here = 0
-        for loc, hs, header in iter_seisf_frames(str(path)):
+        for loc, hs, header, _chained in iter_seisf_frames(str(path), require_chained=True):
             n_bases += 1
             n_here += 1
             try:

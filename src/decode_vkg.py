@@ -57,7 +57,7 @@ def _cmd_info(path: Path) -> int:
         n = 0
         years = set()
         doys = set()
-        for loc, hs, header in iter_seisf_frames(str(path)):
+        for loc, hs, header, _chained in iter_seisf_frames(str(path)):
             from vus_decode import parse_seisf_header_fields
 
             y, d = parse_seisf_header_fields(header + bytes(342))

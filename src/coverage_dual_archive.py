@@ -166,16 +166,43 @@ def main() -> int:
         for path in seisf_paths():
             name = path.name
             n_base = n_match = 0
-            for loc, hs, header in iter_seisf_frames(str(path)):
-                n_base += 1
+            for loc, hs, header, chained in iter_seisf_frames(str(path), require_chained=False):
                 key = bytes(header)
+                year, doy = hdr_year_doy(key)
+                hit = vus_index.get(key)
+
+                if not chained:
+                    if hit is None:
+                        # No VUS counterpart to verify against; fall back to
+                        # the structural heuristic (exclude, as an isolated
+                        # base is *usually* a coincidental match -- see
+                        # AUTHOR_NOTES item 12 for the known false-negative
+                        # rate this accepts).
+                        continue
+                    # Isolated but header-matched: don't guess: verify
+                    # bit-exactness directly, since roughly 40% of these
+                    # turn out to be genuine frames (AUTHOR_NOTES item 12).
+                    vfile_v, _ = hit
+                    if key not in frame_cache:
+                        frame_cache[key] = load_vus_frame_by_header(UTIG / vfile_v, key)
+                    fr_v = frame_cache[key]
+                    verified = False
+                    if fr_v is not None:
+                        try:
+                            bits_v = map_unscramble_data_bits(hs, loc.halfword_offset)
+                            vb_v = make_bit_stream(fr_v)[648 : 648 + 2048]
+                            verified = sum(1 for a, b in zip(bits_v, vb_v) if a != b) == 0
+                        except Exception:
+                            verified = False
+                    if not verified:
+                        continue  # confirmed spurious; exclude
+
+                n_base += 1
                 if key in seisf_keys:
                     seisf_dup_headers += 1
                 else:
                     seisf_keys.add(key)
 
-                year, doy = hdr_year_doy(key)
-                hit = vus_index.get(key)
                 if hit is None:
                     n_seisf_only += 1
                     rec = {
