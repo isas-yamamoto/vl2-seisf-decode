@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """
-固定リグレッション: SEISF 本番アンスクランブル デコード (vkg.1 ↔ vkg.47)
+Fixed regression: SEISF production unscramble (vkg.1 ↔ vkg.47).
 
-PASS 条件（データが ../utig/ にあるとき）:
-  1. 金フレーム f0: GCSC=125078, science 2048/2048, VUS 450B 完全一致
-  2. 本番定数: Q=matv, bit_offset=15
-  3. レコード0の VUS ヘッダ一致フレーム: すべて 2048/2048（先読み込み）
-  4. VUS 単独: vkg.47 先頭が NORMAL / n=83
+PASS criteria (with utig/ at the repository root):
+  1. Gold frame f0: GCSC=125078, science 2048/2048, VUS 450B exact match
+  2. Production constants: Q=matv, bit_offset=15
+  3. All VUS header-matched frames on record 0: 2048/2048 (with look-ahead)
+  4. VUS alone: vkg.47 first frame NORMAL / n=83
 
-実行:
-  cd src/
-  python3 test_regression.py
-  python3 -m unittest test_regression -v
+Run from the repository root:
+  python3 tests/test_regression.py
+  python3 -m unittest discover -s tests -v
 
-終了コード 0 = すべて OK、1 = 失敗またはデータ欠落。
+Exit 0 = all OK, 1 = failure or missing data.
 """
 
 from __future__ import annotations
@@ -24,7 +23,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "src"))
 
 from seisf_decode import (  # noqa: E402
     _PAIR36_BIT_OFFSET,
@@ -64,7 +63,7 @@ def _data_available() -> bool:
 
 @unittest.skipUnless(_data_available(), f"missing {VKG1.name} and/or {VKG47.name} under utig/")
 class TestSeisfUnscrambleRegression(unittest.TestCase):
-    """本番アンスクランブルの固定アサート一式。"""
+    """Fixed assertions for production SEISF unscramble."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -159,7 +158,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
     # ----- multi-frame record 0 -----
 
     def test_record0_header_matched_frames_bit_perfect(self) -> None:
-        """vkg.1 レコード0 と vkg.47 で 108B ヘッダ一致する全フレーム。"""
+        """All 108B header-matched frames on vkg.1 record 0 vs vkg.47."""
         matched = 0
         imperfect: list[tuple[int, int, int]] = []
         for base in find_seisf_frame_bases(self.records[0]):
@@ -170,7 +169,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
             fr = self.vus[hdr]
             q, matv = estimate_q_from_matv(hs, base)
             if not (0 < matv < 503):
-                continue  # 本番アンスクランブル対象外（偽フレーム / QEQ503）
+                continue  # outside production gate (spurious / out-of-range matv)
             bits = map_unscramble_data_bits(hs, base)
             vb = make_bit_stream(fr)[648 : 648 + 2048]
             mism = sum(1 for a, b in zip(bits, vb) if a != b)
@@ -184,7 +183,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
                 f"frame_eq failed base={base} mism_bits={mism}",
             )
         self.assertGreaterEqual(
-            matched, 12, f"expected ≥12 header-matched Path-D frames, got {matched}"
+            matched, 12, f"expected ≥12 header-matched production frames, got {matched}"
         )
         self.assertEqual(
             imperfect,
@@ -193,7 +192,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
         )
 
     def test_record_boundary_frame_3530(self) -> None:
-        """レコード末尾 base=3530 は先読みで 2048 一致すること。"""
+        """Last-frame base=3530 bit-matches VUS with next-record look-ahead."""
         base = 3530
         self.assertIn(base, find_seisf_frame_bases(self.records[0]))
         # without extend: too few science halfwords
@@ -211,7 +210,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
         self.assertEqual(seisf_frame_to_vus_bytes(hs, base), fr)
 
     def test_trailing_allones_fill_stripped_on_splice(self) -> None:
-        """レコード末尾の 0o777777 連続 fill (2+) は next-record splice 前に落とす。"""
+        """Strip pure 0o777777 fill (length 2+) before splicing the next record."""
         # Synthetic: 10 halfwords of "data", two all-ones pads; next record
         # length ≡ 4 (mod 224) so leader-skip is 4, then real payload.
         cur = [0o10000 + i for i in range(10)] + [0o777777, 0o777777]
@@ -234,7 +233,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
         self.assertEqual(out1f[10], 0o20000)
 
     def test_vus_oracle_n1_pad_dual(self) -> None:
-        """VUS 参照があるとき n=1 の force strip が safe より良ければ選ばれる。"""
+        """With a VUS reference, force-strip n=1 pad when it improves bit match."""
         from seisf_decode import (
             halfwords_force_strip_single_trailing_ones,
             map_unscramble_best_vs_ref,
@@ -337,7 +336,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
     # ----- matv == 503 and matv > 503 (PD7400072 Q==503 identity / Q>503) -----
 
     def test_matv_gt_503_bit_perfect(self) -> None:
-        """PD7400072 "Q > 503" 読み出し式: レコード1 base=1962 は matv=508。"""
+        """PD7400072 Q>503 readout: record 1 base=1962 has matv=508."""
         ri, base = 1, 1962
         hs = self._hs_for(ri, base)
         hdr = bytes(seisf_frame_header_bytes(hs, base))
@@ -353,7 +352,7 @@ class TestSeisfUnscrambleRegression(unittest.TestCase):
         self.assertEqual(seisf_frame_to_vus_bytes(hs, base), fr)
 
     def test_matv_eq_503_identity_bit_perfect(self) -> None:
-        """PD7400072 "Q == 503" 恒等読み出し: レコード6 base=1514 は matv=503。"""
+        """PD7400072 Q==503 identity readout: record 6 base=1514 has matv=503."""
         ri, base = 6, 1514
         hs = self._hs_for(ri, base)
         hdr = bytes(seisf_frame_header_bytes(hs, base))
@@ -389,7 +388,7 @@ def main() -> int:
         print(f"FAIL: need {VKG1} and {VKG47}", file=sys.stderr)
         return 1
     loader = unittest.TestLoader()
-    suite = loader.loadTestsFromTestCase(TestSeisfUnscrambleRegression)
+    suite = loader.loadTestsFromModule(sys.modules[__name__])
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     if result.wasSuccessful():
         print("\nALL REGRESSION CHECKS PASSED")

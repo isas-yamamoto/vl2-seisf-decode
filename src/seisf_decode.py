@@ -398,7 +398,7 @@ def _halfwords_data_msb_stream(
     Pack science halfwords after the 36-halfword header into a bit stream.
 
     keep_bits: which of the 18 halfword bits (0=MSB .. 17=LSB) to keep, in
-      that order. Default = all 18. Legacy Path-D fallback uses _DROP16_KEEP.
+      that order. Default = all 18. Legacy 16-bit-drop fallback uses _DROP16_KEEP.
     bit_offset: skip this many leading kept bits before taking 2048.
     """
     data_base = frame_base + SEISF_HEADER_HALFWORDS

@@ -25,25 +25,29 @@ Archive-wide bit-exact failure rates: **0.08%** for matv < 503, **0.13%** for ma
 ```bash
 mkdir -p utig && cp /path/to/vkg.1 /path/to/vkg.47 utig/
 
-cd src
-python3 test_regression.py
-python3 decode_vkg.py ../utig/vkg.1 --summary --max-frames 20
+# Required regression gate (needs utig/vkg.1 and vkg.47)
+python3 tests/test_regression.py
+
+# Decode
+python3 src/decode_vkg.py utig/vkg.1 --summary --max-frames 20
 ```
 
 Python 3.9+, standard library only. Cassette images are **not** shipped.
-
-## Data
-
-`vkg.1`–`vkg.56` are archived at DARTS (ISAS/JAXA): https://data.darts.isas.jaxa.jp/pub/viking/utig/
 
 ## Layout
 
 | Path | Contents |
 |------|----------|
-| `src/` | Decoder, CLI, regression tests |
+| `src/` | Production decoder + CLI (`decode_vkg.py`) |
+| `tests/` | Required regression gates (`test_regression.py`, `validate_gold.py`) |
+| `tools/` | Optional full-archive inventory / probes (writes under `out/`) |
 | `legacy/vusinfo/` | Original VUS C decoder (Yukio Yamamoto), first-party; superseded by `src/` |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
 | `docs/` | Operator docs + **format diagrams** (`docs/figures/`) |
+
+## Data
+
+`vkg.1`–`vkg.56` are archived at DARTS (ISAS/JAXA): https://data.darts.isas.jaxa.jp/pub/viking/utig/
 
 ## Format diagrams
 
@@ -58,8 +62,7 @@ Details: [docs/figures/README.md](docs/figures/README.md)
 ## Documentation
 
 - English: [docs/usage.md](docs/usage.md)
-- 日本語: [docs/usage.ja.md](docs/usage.ja.md)
-- N51SUB technical notes (MAP/SET/SEISDT, not in the paper): [docs/n51sub.md](docs/n51sub.md) · [docs/n51sub.ja.md](docs/n51sub.ja.md)
+- N51SUB technical notes (MAP/SET/SEISDT, not in the paper): [docs/n51sub.md](docs/n51sub.md)
 
 ## Cite / materials
 

@@ -10,23 +10,23 @@ README targets are vkg.1~vkg.46.
 
 Examples
 --------
-  # Describe cassette subgroups
-  python3 decode_vkg.py ../utig/vkg.1 --info
+  # From repository root
+  python3 src/decode_vkg.py utig/vkg.1 --info
 
   # Decode SEISF frames (headers + science after MAP/UNSCR)
-  python3 decode_vkg.py ../utig/vkg.1 --summary --max-frames 5
+  python3 src/decode_vkg.py utig/vkg.1 --summary --max-frames 5
 
   # Frame summary only (year, DOY, GCSC, mode)
-  python3 decode_vkg.py ../utig/vkg.1 --summary --max-frames 20
+  python3 src/decode_vkg.py utig/vkg.1 --summary --max-frames 20
 
   # Dump samples CSV for first N frames
-  python3 decode_vkg.py ../utig/vkg.1 --csv out.csv --max-frames 3
+  python3 src/decode_vkg.py utig/vkg.1 --csv out.csv --max-frames 3
 
   # Compare VUS path (vkg.47+) against the C tool
-  python3 decode_vkg.py ../utig/vkg.47 --summary --max-frames 10
+  python3 src/decode_vkg.py utig/vkg.47 --summary --max-frames 10
 
   # SEISF without MAP (debug packing only)
-  python3 decode_vkg.py ../utig/vkg.1 --raw --max-frames 2
+  python3 src/decode_vkg.py utig/vkg.1 --raw --max-frames 2
 """
 
 from __future__ import annotations

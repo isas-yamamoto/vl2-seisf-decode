@@ -4,11 +4,11 @@ Full dual-archive coverage: SEISF (vkg.1–46) vs VUS (vkg.47–56).
 
 Match key = first 108 bytes of the VUS-shaped engineering header.
 
-  python3 coverage_dual_archive.py              # headers + bit sample
-  python3 coverage_dual_archive.py --no-bits
-  python3 coverage_dual_archive.py --bits-all   # all production-eligible
+  python3 tools/coverage_dual_archive.py              # headers + bit sample
+  python3 tools/coverage_dual_archive.py --no-bits
+  python3 tools/coverage_dual_archive.py --bits-all   # all production-eligible
 
-Outputs under draft/figures/:
+Outputs under out/:
   coverage_dual_archive.json
   coverage_dual_archive_report.md
   coverage_seisf_only.jsonl   (one line per SEISF base with no VUS twin)
@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "src"))
 
 from seisf_decode import (  # noqa: E402
     estimate_q_from_matv,
@@ -37,7 +37,7 @@ from vkg_format import open_vkg  # noqa: E402
 from vus_decode import make_bit_stream, parse_seisf_header_fields  # noqa: E402
 
 UTIG = ROOT / "utig"
-OUT_DIR = ROOT / "draft" / "figures"
+OUT_DIR = ROOT / "out"
 OUT_JSON = OUT_DIR / "coverage_dual_archive.json"
 OUT_MD = OUT_DIR / "coverage_dual_archive_report.md"
 OUT_SEISF_ONLY = OUT_DIR / "coverage_seisf_only.jsonl"

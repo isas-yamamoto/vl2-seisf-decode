@@ -2,11 +2,11 @@
 """
 Gold-frame diagnostics + hard assertions.
 
-Run from src/:
-  python3 validate_gold.py
+Run from repository root:
+  python3 tests/validate_gold.py
 
-比較表も出します。アサート失敗時は終了コード 1。
-固定リグレッション一式は test_regression.py を使ってください。
+Prints a comparison table. Exit code 1 on assertion failure.
+Use tests/test_regression.py for the full fixed suite.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "src"))
 
 from seisf_decode import (  # noqa: E402
     _PAIR36_BIT_OFFSET,

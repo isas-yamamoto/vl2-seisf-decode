@@ -7,11 +7,11 @@ Probe: are VUS-only residuals partly SEISF under-detection?
 2) How many unique VUS headers newly match under exhaustive discovery?
 3) For remaining VUS-only, GCSC / (year,doy) neighbourhood on SEISF side.
 
-  python3 probe_vus_only_neighbours.py
+  python3 tools/probe_vus_only_neighbours.py
 
 Outputs:
-  draft/figures/vus_only_neighbour_probe.json
-  draft/figures/vus_only_neighbour_report.md
+  out/vus_only_neighbour_probe.json
+  out/vus_only_neighbour_report.md
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "src"))
 
 from seisf_decode import (  # noqa: E402
     extend_halfwords_across_records,
@@ -44,8 +44,8 @@ from vkg_format import (  # noqa: E402
 from vus_decode import decode_vus_frame, parse_seisf_header_fields  # noqa: E402
 
 UTIG = ROOT / "utig"
-OUT_JSON = ROOT / "draft" / "figures" / "vus_only_neighbour_probe.json"
-OUT_MD = ROOT / "draft" / "figures" / "vus_only_neighbour_report.md"
+OUT_JSON = ROOT / "out" / "vus_only_neighbour_probe.json"
+OUT_MD = ROOT / "out" / "vus_only_neighbour_report.md"
 
 
 def year_doy(hdr: bytes) -> Tuple[int, int]:

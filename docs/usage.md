@@ -1,10 +1,7 @@
 # Usage — Viking Lander 2 (`utig/vkg.*`) decode
 
-Paths below assume the published layout (`src/` next to `docs/`).
+Paths below assume commands are run from the **repository root**.
 
-```bash
-cd src
-```
 
 Python 3.9+, standard library only.
 
@@ -14,15 +11,13 @@ Python 3.9+, standard library only.
 
 | Files | Label | Meaning |
 |-------|--------|---------|
-| `../utig/vkg.1`–`vkg.29` | `DLT…` | **SEISF** (scrambled). Main target of this package |
-| `../utig/vkg.30`–`vkg.46` | `DLT…` | **MET** (meteorology instrument, separate from SEISF). Same holding, out of scope |
-| `../utig/vkg.47`–`vkg.56` | `VUS…` | **VUS / USEIS** (unscrambled). Same layout as `vusinfo` |
+| `utig/vkg.1`–`vkg.29` | `DLT…` | **SEISF** (scrambled). Main target of this package |
+| `utig/vkg.30`–`vkg.46` | `DLT…` | **MET** (meteorology instrument, separate from SEISF). Same holding, out of scope |
+| `utig/vkg.47`–`vkg.56` | `VUS…` | **VUS / USEIS** (unscrambled). Same layout as `vusinfo` |
 
 Both tape families share one CLI. Type is detected from the leading subgroup header, not the file extension.
 
 Source: `vkg.1`–`vkg.56` are archived at DARTS (ISAS/JAXA): https://data.darts.isas.jaxa.jp/pub/viking/utig/
-
-Japanese version: [usage.ja.md](usage.ja.md)
 
 ## Cassette / frame formats
 
@@ -42,32 +37,33 @@ Index: [figures/README.md](figures/README.md). PDF/SVG siblings for each basenam
 
 ---
 
-## Source files
+## Layout
 
-| File | Role |
+| Path | Role |
 |------|------|
-| `decode_vkg.py` | CLI entry point |
-| `vkg_format.py` | Cassette / record layout |
-| `vus_decode.py` | VUS science bitstream decode |
-| `seisf_decode.py` | SEISF decode (pair36 / Q=matv / off=15) |
-| `validate_gold.py` | Gold-frame diagnostics + hard asserts |
-| `test_regression.py` | Fixed regression suite (unittest) |
+| `src/decode_vkg.py` | CLI entry point |
+| `src/vkg_format.py` | Cassette / record layout |
+| `src/vus_decode.py` | VUS science bitstream decode |
+| `src/seisf_decode.py` | SEISF decode (pair36 / Q=matv / off=15) |
+| `tests/validate_gold.py` | Gold-frame diagnostics + hard asserts |
+| `tests/test_regression.py` | Fixed regression suite (unittest) |
+| `tools/` | Optional full-archive inventory / probes (writes under `out/`) |
 
 ---
 
 ## Regression checks (fixed)
 
-With `../utig/vkg.1` and `../utig/vkg.47` present:
+With `utig/vkg.1` and `utig/vkg.47` at the repository root:
 
 ```bash
 # Full suite (gold frame, multi-frame, boundary, VUS)
-python3 test_regression.py
+python3 tests/test_regression.py
 
 # Gold frame only: diagnostics + asserts
-python3 validate_gold.py
+python3 tests/validate_gold.py
 
 # Verbose unittest
-python3 -m unittest test_regression -v
+python3 -m unittest discover -s tests -v
 ```
 
 Exit **0 = PASS**, **1 = FAIL** (missing data also exits 1).
@@ -90,18 +86,18 @@ Exit **0 = PASS**, **1 = FAIL** (missing data also exits 1).
 Subgroup count, labels, record length, SEISF year/DOY range:
 
 ```bash
-python3 decode_vkg.py ../utig/vkg.1 --info
-python3 decode_vkg.py ../utig/vkg.47 --info
+python3 src/decode_vkg.py utig/vkg.1 --info
+python3 src/decode_vkg.py utig/vkg.47 --info
 ```
 
 ### 2. Frame summary (year, DOY, GCSC, mode)
 
 ```bash
 # SEISF (first 20 frames)
-python3 decode_vkg.py ../utig/vkg.1 --summary --max-frames 20
+python3 src/decode_vkg.py utig/vkg.1 --summary --max-frames 20
 
 # VUS (similar to vusinfo -f)
-python3 decode_vkg.py ../utig/vkg.47 --summary --max-frames 20
+python3 src/decode_vkg.py utig/vkg.47 --summary --max-frames 20
 ```
 
 Example (VUS):
@@ -118,8 +114,8 @@ frame=    0 year=1976 doy=249 gcsc=  125078 mode=NORMAL n= 83 chg=255 note=
 Default mode when no other output flags are set. Use `--max-frames` to bound work.
 
 ```bash
-python3 decode_vkg.py ../utig/vkg.1 --samples --max-frames 3 --limit-per-block 20
-python3 decode_vkg.py ../utig/vkg.47 --samples --max-frames 1 --limit-per-block 30
+python3 src/decode_vkg.py utig/vkg.1 --samples --max-frames 3 --limit-per-block 20
+python3 src/decode_vkg.py utig/vkg.47 --samples --max-frames 1 --limit-per-block 30
 ```
 
 - NORMAL / HIGH: `sample  amp_x  amp_y  amp_z`
@@ -128,8 +124,8 @@ python3 decode_vkg.py ../utig/vkg.47 --samples --max-frames 1 --limit-per-block 
 ### 4. CSV export
 
 ```bash
-python3 decode_vkg.py ../utig/vkg.1 --csv out_vkg1.csv --max-frames 5
-python3 decode_vkg.py ../utig/vkg.47 --csv out_vkg47.csv --max-frames 10
+python3 src/decode_vkg.py utig/vkg.1 --csv out_vkg1.csv --max-frames 5
+python3 src/decode_vkg.py utig/vkg.47 --csv out_vkg47.csv --max-frames 10
 ```
 
 Columns: `frame, block, year, doy, gcsc, mode, sample, amp_x, amp_y, amp_z, axis_x, axis_y, axis_z, note`
@@ -139,7 +135,7 @@ Columns: `frame, block, year, doy, gcsc, mode, sample, amp_x, amp_y, amp_z, axis
 Header structure only, or pack bits into VUS-shaped fields without unscramble:
 
 ```bash
-python3 decode_vkg.py ../utig/vkg.1 --raw --summary --max-frames 5
+python3 src/decode_vkg.py utig/vkg.1 --raw --summary --max-frames 5
 ```
 
 ---
@@ -165,10 +161,10 @@ Unscrambled VUS can also be checked with the bundled `vusinfo` C tools
 (legacy, superseded by this package — see `legacy/vusinfo/README.md`):
 
 ```bash
-cd ../legacy/vusinfo
+cd legacy/vusinfo
 make
-./vusinfo -f ../../utig/vkg.47 | head
-./vusinfo -d ../../utig/vkg.47 | head   # amplitudes
+./vusinfo -f ../utig/vkg.47 | head
+./vusinfo -d ../utig/vkg.47 | head   # amplitudes
 ```
 
 Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.
@@ -186,7 +182,7 @@ Python `--summary` year / DOY / GCSC / mode should match `vusinfo -f`.
   - vkg.1↔vkg.47: **2048/2048**, full frame equality where headers match
   - archive-wide bit-exact failure rate: **0.08%** for matv < 503, **0.13%** for matv = 503, **0.11%** for matv > 503 (all three equally reliable; a small residual remains at the last chained-frame position per record)
   - **Record boundaries:** halfword lookahead into the next physical record (`iter_seisf_frames`)
-  - Check: `python3 validate_gold.py`
+  - Check: `python3 tests/validate_gold.py`
 - See also: `materials/N51SUB.jpg`, other files under `materials/`, and `NOTICE`.
 
 ---

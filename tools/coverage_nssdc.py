@@ -6,10 +6,10 @@ Match keys (explicitly NOT the 108-byte dual-archive header):
   primary   : IGCSC / first science-block GCSC
   secondary : (IYEAR, IDAY±δ) with GCSC  — DOY may be off by 1 between products
 
-  python3 coverage_nssdc.py
-  python3 coverage_nssdc.py --no-seisf   # skip SEISF GCSC pass
+  python3 tools/coverage_nssdc.py
+  python3 tools/coverage_nssdc.py --no-seisf   # skip SEISF GCSC pass
 
-Outputs under draft/figures/:
+Outputs under out/:
   coverage_nssdc.json
   coverage_nssdc_report.md
 """
@@ -26,7 +26,7 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "src"))
 
 from seisf_decode import (  # noqa: E402
     find_seisf_frame_bases,
@@ -45,7 +45,7 @@ from vus_decode import (  # noqa: E402
 
 UTIG = ROOT / "utig"
 NSSDC_REFORMAT = ROOT / "nssdc" / "PSPG-00070" / "reformat"
-OUT_DIR = ROOT / "draft" / "figures"
+OUT_DIR = ROOT / "out"
 OUT_JSON = OUT_DIR / "coverage_nssdc.json"
 OUT_MD = OUT_DIR / "coverage_nssdc_report.md"
 

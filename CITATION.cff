@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software or method, please cite it as below."
-title: "Viking Lander 2 SEISF cassette Path-D decoder"
+title: "Viking Lander 2 SEISF cassette decoder"
 authors:
   - family-names: Yamamoto
     given-names: Yukio
