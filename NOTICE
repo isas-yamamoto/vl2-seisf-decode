@@ -2,12 +2,12 @@
 
 ## Software
 
-Software under `src/` and `vusinfo/` is released under the MIT License (see `LICENSE`).
+Software under `src/` and `legacy/vusinfo/` is released under the MIT License (see `LICENSE`).
 
 | Path | Description |
 |------|-------------|
 | `src/` | SEISF production unscramble decoder (Python) and VUS bit-layout port |
-| `vusinfo/` | VUS / USEIS cassette decoder in C (Yukio Yamamoto). `src/vus_decode.py` follows the same science bitstream layout. |
+| `legacy/vusinfo/` | VUS / USEIS cassette reader in C (Yukio Yamamoto, developed ca.\ 2010–2013; first public distribution with this package). `src/vus_decode.py` follows the same science bitstream layout. |
 
 ## Archival documents (PDF)
 

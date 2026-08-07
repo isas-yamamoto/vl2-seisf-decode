@@ -41,7 +41,7 @@ Python 3.9+, standard library only. Cassette images are **not** shipped.
 | `src/` | Production decoder + CLI (`decode_vkg.py`) |
 | `tests/` | Required regression gates (`test_regression.py`, `validate_gold.py`) |
 | `tools/` | Optional full-archive inventory / probes (writes under `out/`) |
-| `legacy/vusinfo/` | Historical C reader for **VUS** frames (`vusinfo`); kept for cross-check with `src/vus_decode.py` |
+| `legacy/vusinfo/` | Author-written C reader for **VUS** (`vusinfo`, ca.\ 2010–2013; first public dist with this package); cross-check for `src/vus_decode.py` |
 | `materials/` | Curated PDFs + `N51SUB.jpg` |
 | `docs/` | Operator docs + **format diagrams** (`docs/figures/`) |
 
