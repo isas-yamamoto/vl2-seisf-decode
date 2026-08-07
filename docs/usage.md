@@ -158,7 +158,7 @@ python3 src/decode_vkg.py utig/vkg.1 --raw --summary --max-frames 5
 ## C decoder (VUS)
 
 Unscrambled VUS can also be checked with the bundled `vusinfo` C tools
-(legacy, superseded by this package — see `legacy/vusinfo/README.md`):
+under `legacy/vusinfo/` (same science-bit layout as `src/vus_decode.py`):
 
 ```bash
 cd legacy/vusinfo

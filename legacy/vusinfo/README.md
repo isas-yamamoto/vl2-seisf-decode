@@ -1,8 +1,12 @@
-# vusinfo — VUS / USEIS cassette decoder (legacy)
+# vusinfo — VUS / USEIS cassette reader (C)
 
-First-party C tools by **Yukio Yamamoto** for unscrambled VUS cassette frames,
-superseded by the Python decoder in `../../src/` (same science bit layout;
-port: `../../src/vus_decode.py`). Kept for reference and cross-checking.
+Historical C tools for **already-unscrambled** VUS cassette frames
+(`vkg.47`–`vkg.56`). The Python package decodes VUS in
+`src/vus_decode.py` with the same science-bit layout; this tree is kept
+so operators can cross-check year / DOY / GCSC / amplitudes against
+`vusinfo -f` / `-d`.
+
+SEISF unscrambling is not implemented here — use `src/` for that.
 
 ```bash
 make
