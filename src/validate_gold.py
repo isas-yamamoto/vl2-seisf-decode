@@ -72,7 +72,7 @@ def main() -> int:
 
     q0, matv = estimate_q_from_matv(hs, fb)
     q18, _ = estimate_q18_from_matv(hs, fb)
-    print(f"matv={matv} Q={q0} (Path D uses Q=matv, off={_PAIR36_BIT_OFFSET})  q18={q18}")
+    print(f"matv={matv} Q={q0} (production uses Q=matv, off={_PAIR36_BIT_OFFSET})  q18={q18}")
 
     paths: dict[str, list[int]] = {}
     paths["map_unscramble (auto)"] = map_unscramble_data_bits(hs, fb)

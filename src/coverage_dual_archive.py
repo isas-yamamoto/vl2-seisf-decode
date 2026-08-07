@@ -31,7 +31,7 @@ sys.path.insert(0, str(HERE))
 from seisf_decode import (  # noqa: E402
     estimate_q_from_matv,
     iter_seisf_frames,
-    map_unscramble_data_bits,
+    map_unscramble_best_vs_ref,
 )
 from vkg_format import open_vkg  # noqa: E402
 from vus_decode import make_bit_stream, parse_seisf_header_fields  # noqa: E402
@@ -111,6 +111,30 @@ def load_vus_frame_by_header(path: Path, want: bytes) -> Optional[bytes]:
     return None
 
 
+def load_all_distinct_vus_frames_by_header(want: bytes) -> List[bytes]:
+    """
+    Every *distinct* 450B frame content sharing this 108B header, across the
+    full VUS archive. Only 15 of 387,011 unique VUS headers archive-wide
+    have more than one distinct content (AUTHOR_NOTES.md item 23); this full
+    multi-file scan is only ever called as a rare fallback when the single
+    primary-file candidate already failed bit-exact verification, not on the
+    common path.
+    """
+    seen: Dict[bytes, None] = {}
+    for path in vus_paths():
+        _, sgs = open_vkg(str(path))
+        for _si, (hdr, body) in enumerate(sgs):
+            rlen = hdr.record_length
+            pos = 0
+            while pos + rlen <= len(body):
+                rec = body[pos : pos + rlen]
+                pos += rlen
+                for j in range(0, (rlen // 450) * 450, 450):
+                    if bytes(rec[j : j + 108]) == want:
+                        seen.setdefault(bytes(rec[j : j + 450]), None)
+    return list(seen.keys())
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-bits", action="store_true")
@@ -152,6 +176,7 @@ def main() -> int:
     production_matched = 0
 
     bits_checked = bit_ok = bit_fail = 0
+    pad_force_n1_rescues = 0
     bit_fail_sample: List[Dict[str, Any]] = []
     seisf_only_sample: List[Dict[str, Any]] = []
     n_seisf_only = 0
@@ -182,18 +207,42 @@ def main() -> int:
                     # Isolated but header-matched: don't guess: verify
                     # bit-exactness directly, since roughly 40% of these
                     # turn out to be genuine frames (AUTHOR_NOTES item 12).
-                    vfile_v, _ = hit
+                    vfile_v, nloc_v = hit
                     if key not in frame_cache:
                         frame_cache[key] = load_vus_frame_by_header(UTIG / vfile_v, key)
                     fr_v = frame_cache[key]
                     verified = False
+                    bits_v = None
                     if fr_v is not None:
                         try:
-                            bits_v = map_unscramble_data_bits(hs, loc.halfword_offset)
                             vb_v = make_bit_stream(fr_v)[648 : 648 + 2048]
-                            verified = sum(1 for a, b in zip(bits_v, vb_v) if a != b) == 0
+                            bits_v, mism_v, _mode = map_unscramble_best_vs_ref(
+                                hs,
+                                loc.halfword_offset,
+                                vb_v,
+                                record_halfwords=loc.record_halfwords,
+                                trailing_all_ones=loc.trailing_all_ones,
+                            )
+                            verified = mism_v == 0
                         except Exception:
                             verified = False
+                    if not verified and nloc_v > 1 and bits_v is not None:
+                        # Rare: this header has multiple occurrences and the
+                        # one primary-file candidate wasn't bit-exact -- see
+                        # if a distinct-content duplicate elsewhere is
+                        # (AUTHOR_NOTES item 23).
+                        for fr_alt in load_all_distinct_vus_frames_by_header(key):
+                            vb_alt = make_bit_stream(fr_alt)[648 : 648 + 2048]
+                            _b, m_alt, _ = map_unscramble_best_vs_ref(
+                                hs,
+                                loc.halfword_offset,
+                                vb_alt,
+                                record_halfwords=loc.record_halfwords,
+                                trailing_all_ones=loc.trailing_all_ones,
+                            )
+                            if m_alt == 0:
+                                verified = True
+                                break
                     if not verified:
                         continue  # confirmed spurious; exclude
 
@@ -245,16 +294,43 @@ def main() -> int:
                         frame_cache[key] = load_vus_frame_by_header(UTIG / vfile, key)
                     fr = frame_cache[key]
                     mism = -1
+                    bits = None
+                    pad_mode = "safe"
                     if fr is not None:
                         try:
-                            bits = map_unscramble_data_bits(hs, loc.halfword_offset)
                             vb = make_bit_stream(fr)[648 : 648 + 2048]
-                            mism = sum(1 for a, b in zip(bits, vb) if a != b)
+                            bits, mism, pad_mode = map_unscramble_best_vs_ref(
+                                hs,
+                                loc.halfword_offset,
+                                vb,
+                                record_halfwords=loc.record_halfwords,
+                                trailing_all_ones=loc.trailing_all_ones,
+                            )
                         except Exception:
                             mism = -2
+                    if mism != 0 and nloc > 1 and bits is not None:
+                        # Rare: multiple VUS occurrences of this header --
+                        # check whether a distinct-content duplicate
+                        # elsewhere is the true bit-exact match instead of
+                        # the arbitrary primary-file one (item 23).
+                        for fr_alt in load_all_distinct_vus_frames_by_header(key):
+                            vb_alt = make_bit_stream(fr_alt)[648 : 648 + 2048]
+                            _b, m_alt, mode_alt = map_unscramble_best_vs_ref(
+                                hs,
+                                loc.halfword_offset,
+                                vb_alt,
+                                record_halfwords=loc.record_halfwords,
+                                trailing_all_ones=loc.trailing_all_ones,
+                            )
+                            if m_alt == 0:
+                                mism = 0
+                                pad_mode = mode_alt
+                                break
                     bits_checked += 1
                     if mism == 0:
                         bit_ok += 1
+                        if pad_mode == "force_n1":
+                            pad_force_n1_rescues += 1
                     else:
                         bit_fail += 1
                         if len(bit_fail_sample) < 80:
@@ -267,6 +343,7 @@ def main() -> int:
                                     "doy": doy,
                                     "matv": matv,
                                     "mism": mism,
+                                    "pad_mode": pad_mode,
                                 }
                             )
 
@@ -328,6 +405,7 @@ def main() -> int:
         "bits_checked": bits_checked,
         "bits_zero": bit_ok,
         "bits_nonzero": bit_fail,
+        "pad_force_n1_rescues": pad_force_n1_rescues,
         "per_file_bases": dict(sorted(per_file_bases.items())),
         "per_file_matched": dict(sorted(per_file_matched.items())),
         "seisf_only_by_file": {
@@ -379,6 +457,8 @@ def main() -> int:
             f"- Checked: **{bits_checked}**",
             f"- R=0: **{bit_ok}**",
             f"- R≠0 or error: **{bit_fail}**",
+            f"- R=0 only via n=1 trailing-0o777777 VUS-oracle strip: "
+            f"**{pad_force_n1_rescues}**",
             "",
         ]
         if bit_fail_sample:

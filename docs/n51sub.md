@@ -173,7 +173,7 @@ to `SEISDT`/`CLP` (segment done, via `ISZ NB`).
 (`_n51_unscr_segment`), reusing the same `MAT[]` table and matching the
 address-setup and refill-group sizes above; it is kept as a secondary,
 exploratory path and is **not** what the production decoder uses to produce
-its validated, bit-exact output (`n51_unscramble_2048` / Path D constants in
+its validated, bit-exact output (`n51_unscramble_2048` / production pair36 constants in
 `README.md`, i.e. 36-bit halfword pairing with the top 4 bits dropped). A
 fully cycle-accurate revival of `UNSCR`/`BOUT` — one that reproduces the
 production bit-exact result via genuine PDP-15 bit-serial emulation rather

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-固定リグレッション: Path D SEISF デコード (vkg.1 ↔ vkg.47)
+固定リグレッション: SEISF 本番アンスクランブル デコード (vkg.1 ↔ vkg.47)
 
 PASS 条件（データが ../utig/ にあるとき）:
   1. 金フレーム f0: GCSC=125078, science 2048/2048, VUS 450B 完全一致
-  2. Path D 定数: Q=matv, bit_offset=15
+  2. 本番定数: Q=matv, bit_offset=15
   3. レコード0の VUS ヘッダ一致フレーム: すべて 2048/2048（先読み込み）
   4. VUS 単独: vkg.47 先頭が NORMAL / n=83
 
@@ -63,8 +63,8 @@ def _data_available() -> bool:
 
 
 @unittest.skipUnless(_data_available(), f"missing {VKG1.name} and/or {VKG47.name} under utig/")
-class TestPathDRegression(unittest.TestCase):
-    """Path D の固定アサート一式。"""
+class TestSeisfUnscrambleRegression(unittest.TestCase):
+    """本番アンスクランブルの固定アサート一式。"""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -107,7 +107,7 @@ class TestPathDRegression(unittest.TestCase):
 
     # ----- constants -----
 
-    def test_path_d_constants(self) -> None:
+    def test_unscramble_constants(self) -> None:
         self.assertEqual(_PAIR36_BIT_OFFSET, 15)
         self.assertEqual(_PAIR36_DROP, (0, 1, 2, 3))
 
@@ -170,7 +170,7 @@ class TestPathDRegression(unittest.TestCase):
             fr = self.vus[hdr]
             q, matv = estimate_q_from_matv(hs, base)
             if not (0 < matv < 503):
-                continue  # Path D 対象外（偽フレーム / QEQ503）
+                continue  # 本番アンスクランブル対象外（偽フレーム / QEQ503）
             bits = map_unscramble_data_bits(hs, base)
             vb = make_bit_stream(fr)[648 : 648 + 2048]
             mism = sum(1 for a, b in zip(bits, vb) if a != b)
@@ -209,6 +209,130 @@ class TestPathDRegression(unittest.TestCase):
         mism = sum(1 for a, b in zip(bits, vb) if a != b)
         self.assertEqual(mism, 0)
         self.assertEqual(seisf_frame_to_vus_bytes(hs, base), fr)
+
+    def test_trailing_allones_fill_stripped_on_splice(self) -> None:
+        """レコード末尾の 0o777777 連続 fill (2+) は next-record splice 前に落とす。"""
+        # Synthetic: 10 halfwords of "data", two all-ones pads; next record
+        # length ≡ 4 (mod 224) so leader-skip is 4, then real payload.
+        cur = [0o10000 + i for i in range(10)] + [0o777777, 0o777777]
+        nxt = [0, 0o3000, 0, 0] + [0o20000 + i for i in range(220)]  # len 224
+        nxt = nxt + [0] * 4  # total len 228 ≡ 4 (mod 224)
+        self.assertEqual(len(nxt) % 224, 4)
+        out = extend_halfwords_across_records([cur, nxt], 0, 30)
+        self.assertEqual(out[:10], cur[:10])
+        self.assertNotIn(0o777777, out[:12])
+        self.assertEqual(out[10:15], [0o20000 + i for i in range(5)])
+        # Length-1 trailing all-ones is left alone (ambiguous with real science).
+        cur1 = [0o10000 + i for i in range(10)] + [0o777777]
+        out1 = extend_halfwords_across_records([cur1, nxt], 0, 30)
+        self.assertEqual(out1[10], 0o777777)
+        # force mode strips n=1; VUS-oracle path uses this only when ref agrees.
+        out1f = extend_halfwords_across_records(
+            [cur1, nxt], 0, 30, trailing_ones_mode="force"
+        )
+        self.assertNotEqual(out1f[10], 0o777777)
+        self.assertEqual(out1f[10], 0o20000)
+
+    def test_vus_oracle_n1_pad_dual(self) -> None:
+        """VUS 参照があるとき n=1 の force strip が safe より良ければ選ばれる。"""
+        from seisf_decode import (
+            halfwords_force_strip_single_trailing_ones,
+            map_unscramble_best_vs_ref,
+        )
+
+        # Reconstruct force strip on a safe splice when the physical record
+        # ends with a single all-ones at index L-1.
+        L = 12
+        pad_at = L - 1
+        hs_safe = [i for i in range(pad_at)] + [0o777777] + [100 + i for i in range(20)]
+        hs_force = halfwords_force_strip_single_trailing_ones(hs_safe, L)
+        self.assertIsNotNone(hs_force)
+        assert hs_force is not None
+        self.assertEqual(hs_force[pad_at], 100)
+        self.assertEqual(len(hs_force), len(hs_safe) - 1)
+        # n!=1 is not forced
+        hs_safe2 = [i for i in range(pad_at - 1)] + [0o777777, 0o777777] + [100] * 20
+        # After production safe-strip, this wouldn't present 2 ones; simulation
+        # for the helper: multi still present rejects force.
+        self.assertIsNone(halfwords_force_strip_single_trailing_ones(hs_safe2, L))
+        # map_unscramble_best_vs_ref needs a real frame for bits; here unit-test
+        # only the selection: force mism lower than safe.
+        # Use zeros as ref and zero bits both ways is vacuous; skip unscramble
+        # path -- just ensure API returns safe when no improvement available
+        # (force reconstruction works on length only, unscramble needs full
+        # frame span). Spot-check real fixture if vkg.3 present.
+        vkg3 = ROOT / "utig" / "vkg.3"
+        if not vkg3.is_file() or not VKG47.is_file():
+            return
+        # Known FIX case: vkg.3 sg6/rec129, base=3529? -- item 24 used sg7/r129
+        # base=3529 with ns=1. Prefer: load and assert dual reaches 0.
+        from seisf_decode import (
+            extend_halfwords_across_records,
+            halfwords_span_for_frame,
+            seisf_frame_header_bytes,
+        )
+        from vkg_format import body_to_halfwords, open_vkg
+        from vus_decode import make_bit_stream
+
+        _, sgs = open_vkg(str(vkg3))
+        h, body = sgs[7]
+        rlen = h.record_length
+        recs: list = []
+        pos = 0
+        while pos + rlen <= len(body):
+            recs.append(body_to_halfwords(body[pos : pos + rlen]))
+            pos += rlen
+        si, ri, base = 7, 129, 3529
+        # re-read subgroup 7
+        cur = recs[ri]
+        if cur[-1] != 0o777777 or (len(cur) > 1 and cur[-2] == 0o777777):
+            self.skipTest("fixture record no longer has pure ns=1 pad")
+        need = halfwords_span_for_frame(base)
+        hs = extend_halfwords_across_records(recs, ri, need)  # safe
+        # index a few VUS files for the header
+        hdr = bytes(seisf_frame_header_bytes(hs, base))
+        fr = None
+        for n in range(47, 57):
+            p = ROOT / "utig" / f"vkg.{n}"
+            if not p.is_file():
+                continue
+            _, vs = open_vkg(str(p))
+            for _hh, bb in vs:
+                rr = _hh.record_length
+                pp = 0
+                while pp + rr <= len(bb):
+                    rec = bb[pp : pp + rr]
+                    pp += rr
+                    for j in range(0, rr, 450):
+                        if j + 450 > len(rec):
+                            break
+                        if bytes(rec[j : j + 108]) == hdr:
+                            fr = bytes(rec[j : j + 450])
+                            break
+                    if fr is not None:
+                        break
+                if fr is not None:
+                    break
+        if fr is None:
+            self.skipTest("no VUS header match for fixture")
+        vb = make_bit_stream(fr)[648 : 648 + 2048]
+        from seisf_decode import map_unscramble_data_bits
+
+        m_safe = sum(
+            1
+            for a, b in zip(map_unscramble_data_bits(hs, base), vb)
+            if a != b
+        )
+        bits, m, mode = map_unscramble_best_vs_ref(
+            hs,
+            base,
+            vb,
+            record_halfwords=len(cur),
+            trailing_all_ones=1,
+        )
+        self.assertEqual(m, 0, f"oracle dual should reach 0, got {m} (safe was {m_safe})")
+        self.assertEqual(mode, "force_n1")
+        self.assertGreater(m_safe, 0)
 
     # ----- matv == 503 and matv > 503 (PD7400072 Q==503 identity / Q>503) -----
 
@@ -265,7 +389,7 @@ def main() -> int:
         print(f"FAIL: need {VKG1} and {VKG47}", file=sys.stderr)
         return 1
     loader = unittest.TestLoader()
-    suite = loader.loadTestsFromTestCase(TestPathDRegression)
+    suite = loader.loadTestsFromTestCase(TestSeisfUnscrambleRegression)
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     if result.wasSuccessful():
         print("\nALL REGRESSION CHECKS PASSED")

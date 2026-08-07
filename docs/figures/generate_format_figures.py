@@ -241,7 +241,7 @@ def fig_seisf():
     ax.text(
         0.35,
         y + 0.95,
-        "(D) Science path (Path D) — from halfword pairs to 2048-bit buffer",
+        "(D) Science unscramble (production) — from halfword pairs to 2048-bit buffer",
         ha="left",
         fontsize=9.5,
         fontweight="bold",
@@ -498,7 +498,7 @@ def fig_vus():
     ax.text(
         0.4,
         y - 0.25,
-        "Science offset = (word 19 − 1) × 36 = 648.  Path D injects recovered SEISF bits into this region.",
+        "Science offset = (word 19 − 1) × 36 = 648.  The production unscramble injects recovered SEISF bits into this region.",
         fontsize=7.2,
         color=C["muted"],
     )
@@ -537,7 +537,7 @@ def fig_vus():
     ax.text(
         0.4,
         y - 0.35,
-        "On VUS this 2048-bit region is already sequential.  On SEISF it is scrambled until Path D.",
+        "On VUS this 2048-bit region is already sequential.  On SEISF it is scrambled until unscrambled.",
         fontsize=7.2,
         color=C["muted"],
     )
@@ -547,7 +547,7 @@ def fig_vus():
     ax.text(
         0.6,
         0.75,
-        "Header-matched pairs (same year/DOY/GCSC) let Path D assert bit identity: 2048/2048 residual 0\n"
+        "Header-matched pairs (same year/DOY/GCSC) let the production unscramble assert bit identity: 2048/2048 residual 0\n"
         "and 450-byte frame equality on gold cases (e.g. GCSC = 125078, year/DOY 1976/249).",
         fontsize=7.2,
         color=C["muted"],
@@ -596,7 +596,7 @@ def fig_bridge():
     )
 
     rounded(ax, 3.5, 1.85, 3.0, 1.5, C["light_b"], lw=1.0)
-    ax.text(5.0, 3.05, "Path D", ha="center", fontsize=9, fontweight="bold", color=C["bitpage"])
+    ax.text(5.0, 3.05, "unscramble", ha="center", fontsize=9, fontweight="bold", color=C["bitpage"])
     ax.text(
         5.0,
         2.35,

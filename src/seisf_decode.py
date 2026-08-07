@@ -23,13 +23,13 @@ This module:
 
 Status (2026-08):
   - Header + PD7400072 Q-page reorder solid.
-  - Science Path D (primary): halfword pairs → 36 bits, drop top 4
+  - Science unscramble (primary): halfword pairs → 36 bits, drop top 4
     (hi[0:4]) keep hi[4:18]||lo[0:18] = 32 bits/pair (BLP-style 32 of 36);
     **Q = matv** (N51SUB NBA/NBB with Q=matv); **bit_offset = 15**.
   - vkg.1↔vkg.47 matched frames: **2048/2048 + full frame equality** with
     next-record halfword lookahead for record-boundary frames.
   - Earlier Q=matv−2 / off=13 left ≤8 page-edge residuals (off-by-two of
-    the same pairing). Structural N51SUB BOUT still open as Path E.
+    the same pairing). Structural N51SUB BOUT still open as a structural BOUT walk (not the production path).
   - Frame-header discovery: the header word-1 gate accepts 0o000/0o100/0o200
     (not only 0o100); see _VALID_HI_WORDS. Recovers ~23% more header-matched
     pairs on vkg.1 subgroup 0 (380→423) with no change to bit-exact results.
@@ -54,13 +54,13 @@ from vus_decode import DecodedFrame, decode_vus_frame, parse_seisf_header_fields
 
 MASK18 = 0o777777
 
-# Primary packing (Path D): 36-bit halfword pair → keep indices 4..35
+# Primary packing (production): 36-bit halfword pair → keep indices 4..35
 # (drop top 4 of first halfword). Multi-frame: Q = matv, bit_offset = 15.
 # (Q=matv−k with off=15−k is almost as good; k=0 is exact vs VUS.)
 _PAIR36_DROP = (0, 1, 2, 3)
 _PAIR36_BIT_OFFSET = 15
-# Halfwords needed after frame_base for Path D (header + ~64 pairs + margin)
-_PATH_D_HALFWORDS_SPAN = SEISF_HEADER_HALFWORDS + 64 * 2 + 8
+# Halfwords needed after frame_base for production unscramble (header + ~64 pairs + margin)
+_UNSCRAMBLE_HALFWORDS_SPAN = SEISF_HEADER_HALFWORDS + 64 * 2 + 8
 
 # Legacy fallback: keep 16 of 18 halfword bits (per-halfword drop).
 _DROP16_CANDIDATES = (
@@ -174,6 +174,10 @@ class SeisfFrameLoc:
     record_index: int
     halfword_offset: int
     file_byte_hint: int  # absolute file offset when available
+    # Physical record length in halfwords (for pad dual-trial against VUS).
+    record_halfwords: int = 0
+    # Pure trailing 0o777777 count on that physical record *before* any strip.
+    trailing_all_ones: int = 0
 
 
 # Word1 (``hi``) of a real frame header is not the single fixed sync value
@@ -467,7 +471,7 @@ def _n51_unscr_segment(
     first extract use residual low bits (bp & 037); AA path uses (AAC15 & 017).
 
     This is the structural N51 walk. Gold-frame bit agreement is still below
-    Path D (16-bit drop) for amplitudes; kept as a scored candidate.
+    production pair36 (better than 16-bit drop) for amplitudes; kept as a scored candidate.
     """
     if nbits <= 0:
         return []
@@ -635,7 +639,7 @@ def estimate_q_from_matv(halfwords: Sequence[int], frame_base: int) -> Tuple[int
     Estimate DAPU Q and matv for a SEISF frame.
 
     N51SUB (photographed listing) uses NBA=matv+9 and NBB=503-matv, which
-    are exactly PD7400072 lengths for **Q = matv**. Path D (pair36 packing)
+    are exactly PD7400072 lengths for **Q = matv**. production unscramble (pair36 packing)
     matches VUS bit-for-bit with this Q and bit_offset=15.
 
     Returns (q_primary, matv) where q_primary = matv for all matv in
@@ -728,7 +732,7 @@ def map_unscramble_data_bits(
             flipped[0] ^= 1
             candidates.append((flipped, bonus - 30))  # flip rarely needed for pair36
 
-    # --- Path D primary: pair36 drop(0..3), Q=matv, off=15 ---
+    # --- Production primary: pair36 drop(0..3), Q=matv, off=15 ---
     # Covers the full valid matv range [1, 512] returned by estimate_q_from_matv:
     # Q<503 (validated), Q==503 (identity), and Q in [504,512] (PD7400072
     # "Q>503" formula). In practice matv is always in this range once the
@@ -744,7 +748,7 @@ def map_unscramble_data_bits(
         return pd7400072_unscramble(s_primary, q_matv)
 
     # matv out of range: scored fallbacks (18-bit Q residual, MAP, N51 BOUT)
-    # --- Path A: 18-bit PD7400072 (Q18 = matv − residual ≈ matv-31) ---
+    # --- Fallback: 18-bit 18-bit PD7400072 (Q18 = matv − residual ≈ matv-31) ---
     q_list: list[int] = [q18]
     if 0 < matv < 503:
         q_list.extend(
@@ -790,7 +794,7 @@ def map_unscramble_data_bits(
             seen_q.add(q)
             _add(pd7400072_unscramble(stream, q), 5)
 
-    # --- Path B: legacy EA walk ---
+    # --- Fallback: legacy EA legacy EA walk ---
     data_base = frame_base + SEISF_HEADER_HALFWORDS
     if data_base + 2 < len(halfwords):
         matv_b, mq_saved = _mat_probe(halfwords, data_base)
@@ -820,7 +824,7 @@ def map_unscramble_data_bits(
             bits_b.extend([0] * (2048 - len(bits_b)))
         candidates.append((bits_b, 0))
 
-    # --- Path C: MAP cell (low weight; known dead end as stacked layer) ---
+    # --- Fallback: MAP cell MAP cell (low weight; known dead end as stacked layer) ---
     h150 = list(halfwords[frame_base : frame_base + 150])
     if len(h150) < 150:
         h150.extend([0] * (150 - len(h150)))
@@ -832,7 +836,7 @@ def map_unscramble_data_bits(
     ):
         candidates.append((c, 0))
 
-    # --- Path E: structural N51SUB CLP/BOUT ---
+    # --- Fallback: structural N51SUB structural N51SUB CLP/BOUT ---
     try:
         bout = n51_unscramble_2048(halfwords, frame_base)
         _add(bout, 5)
@@ -940,13 +944,41 @@ def seisf_frame_raw_as_vus_guess(halfwords: Sequence[int], frame_base: int) -> b
 
 def halfwords_span_for_frame(frame_base: int) -> int:
     """Absolute halfword index exclusive-end needed to unscramble frame_base."""
-    return frame_base + _PATH_D_HALFWORDS_SPAN
+    return frame_base + _UNSCRAMBLE_HALFWORDS_SPAN
+
+
+# Pure run of 18-bit all-ones at the end of a physical record is usually
+# fixed-block media fill (DLT/tape image), not SEISF payload. Dropping a short
+# run when splicing into the next record recovers frames that otherwise mis-
+# align; a *single* trailing 0o777777 is ambiguous (real amplitude vs fill) so
+# we leave it; very long runs mark junk/empty records and are left alone.
+_TRAILING_ALL_ONES = 0o777777
+_TRAILING_ALL_ONES_STRIP_MIN = 2
+_TRAILING_ALL_ONES_STRIP_MAX = 16
+# Modes for trailing 0o777777 handling on the *current* record of a splice:
+#   "safe"  — strip pure runs of length 2..16 (production default; no known
+#             false positives against VUS)
+#   "force" — strip pure runs of length 1..16 (includes ambiguous n=1; only
+#             use with a VUS bit-oracle)
+#   "never" — leave trailing all-ones alone
+_TRAILING_ONES_MODES = ("safe", "force", "never")
+
+
+def _trailing_all_ones_count(halfwords: Sequence[int]) -> int:
+    n = 0
+    for w in reversed(halfwords):
+        if w != _TRAILING_ALL_ONES:
+            break
+        n += 1
+    return n
 
 
 def extend_halfwords_across_records(
     records: Sequence[Sequence[int]],
     record_index: int,
     need_len: int,
+    *,
+    trailing_ones_mode: str = "safe",
 ) -> list[int]:
     """
     Build a halfword array starting at records[record_index], appending
@@ -962,10 +994,37 @@ def extend_halfwords_across_records(
     stream, so it must be dropped from each *appended* record or the spliced
     tail is shifted by the leader length and fails to unscramble (see
     draft/AUTHOR_NOTES.md item 18/19).
+
+    The *current* record may also end with a short run of 0o777777 fill words
+    (fixed-block padding on the cassette image). ``trailing_ones_mode``:
+
+    * ``"safe"`` (default): strip pure runs of length 2..16. Length 1 is
+      left because a lone all-ones halfword is often real science.
+    * ``"force"``: strip pure runs of length 1..16. Prefer only with a VUS
+      bit-oracle (``map_unscramble_best_vs_ref``), never as the sole path.
+    * ``"never"``: no trailing-ones stripping.
+
+    Long pure runs (``> 16``) are left alone under every mode; they mark
+    empty/junk records rather than this short-fill case. See
+    draft/AUTHOR_NOTES.md item 24.
     """
+    if trailing_ones_mode not in _TRAILING_ONES_MODES:
+        raise ValueError(
+            f"trailing_ones_mode must be one of {_TRAILING_ONES_MODES}, "
+            f"got {trailing_ones_mode!r}"
+        )
     if record_index < 0 or record_index >= len(records):
         return []
     out = list(records[record_index])
+    pad_n = _trailing_all_ones_count(out)
+    if trailing_ones_mode == "safe":
+        lo, hi = _TRAILING_ALL_ONES_STRIP_MIN, _TRAILING_ALL_ONES_STRIP_MAX
+    elif trailing_ones_mode == "force":
+        lo, hi = 1, _TRAILING_ALL_ONES_STRIP_MAX
+    else:
+        lo, hi = 0, -1  # never
+    if lo <= pad_n <= hi:
+        out = out[:-pad_n]
     ri = record_index + 1
     while len(out) < need_len and ri < len(records):
         nxt = records[ri]
@@ -973,6 +1032,82 @@ def extend_halfwords_across_records(
         out.extend(nxt[leader:])
         ri += 1
     return out
+
+
+def halfwords_force_strip_single_trailing_ones(
+    hs: Sequence[int],
+    record_halfwords: int,
+) -> Optional[list[int]]:
+    """
+    From a *safe*-mode splice ``hs`` whose physical record was
+    ``record_halfwords`` long and ended with exactly one 0o777777, rebuild
+    the force-stripped splice without re-reading the cassette.
+
+    Returns None when the n=1 strip does not apply (no single trailing
+    all-ones still present at the record end slot, or not enough stream
+    left after the drop).
+    """
+    L = record_halfwords
+    if L < 1 or L > len(hs):
+        return None
+    if hs[L - 1] != _TRAILING_ALL_ONES:
+        return None
+    # Exactly one at the physical-record end (not a leftover multi-run
+    # that "safe" left alone because it was >16).
+    if L >= 2 and hs[L - 2] == _TRAILING_ALL_ONES:
+        return None
+    out = list(hs[: L - 1]) + list(hs[L:])
+    return out
+
+
+def map_unscramble_best_vs_ref(
+    hs: Sequence[int],
+    frame_base: int,
+    ref_science_bits: Sequence[int],
+    *,
+    record_halfwords: int = 0,
+    trailing_all_ones: int = 0,
+) -> Tuple[List[int], int, str]:
+    """
+    Decode science bits and, when the production path leaves residual vs a
+    VUS reference bitstring, try the n=1 trailing-0o777777 strip as a second
+    candidate (VUS oracle only).
+
+    Returns (bits, mism_count, mode) where mode is ``"safe"`` or
+    ``"force_n1"``. Prefer this over raw ``map_unscramble_data_bits`` in any
+    path that *already* has a VUS twin; standalone decode keeps ``safe`` only.
+    """
+    target = list(ref_science_bits[:2048])
+    if len(target) < 2048:
+        target.extend([0] * (2048 - len(target)))
+
+    def _mism(bits: Sequence[int]) -> int:
+        return sum(1 for a, b in zip(bits, target) if a != b)
+
+    bits0 = map_unscramble_data_bits(hs, frame_base)
+    m0 = _mism(bits0)
+    if m0 == 0:
+        return bits0, 0, "safe"
+    # Only dual-trial n=1 (safe path already handles 2..16).
+    if trailing_all_ones != 1 and not (
+        record_halfwords > 0
+        and record_halfwords <= len(hs)
+        and hs[record_halfwords - 1] == _TRAILING_ALL_ONES
+    ):
+        return bits0, m0, "safe"
+    if record_halfwords <= 0:
+        return bits0, m0, "safe"
+    hs1 = halfwords_force_strip_single_trailing_ones(hs, record_halfwords)
+    if hs1 is None:
+        return bits0, m0, "safe"
+    need = halfwords_span_for_frame(frame_base)
+    if len(hs1) < need:
+        return bits0, m0, "safe"
+    bits1 = map_unscramble_data_bits(hs1, frame_base)
+    m1 = _mism(bits1)
+    if m1 < m0:
+        return bits1, m1, "force_n1"
+    return bits0, m0, "safe"
 
 
 def iter_seisf_frames(
@@ -1016,6 +1151,8 @@ def iter_seisf_frames(
             records.append(body_to_halfwords(body[pos : pos + rlen]))
             pos += rlen
         for ri, hs0 in enumerate(records):
+            trail_n = _trailing_all_ones_count(hs0)
+            rhw = len(hs0)
             # Extend enough for trailing-edge header BCD (year/DOY) and for
             # science packing after each discovered base.
             search_need = len(hs0) + SEISF_HEADER_HALFWORDS + 8
@@ -1037,7 +1174,14 @@ def iter_seisf_frames(
                     else extend_halfwords_across_records(records, ri, need)
                 )
                 file_off = hdr.file_offset + 1000 + ri * rlen + base * 3
-                loc = SeisfFrameLoc(si, ri, base, file_off)
+                loc = SeisfFrameLoc(
+                    si,
+                    ri,
+                    base,
+                    file_off,
+                    record_halfwords=rhw,
+                    trailing_all_ones=trail_n,
+                )
                 header = seisf_frame_header_bytes(hs, base)
                 yield loc, hs, header, chained
 

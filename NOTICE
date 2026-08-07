@@ -6,7 +6,7 @@ Software under `src/` and `vusinfo/` is released under the MIT License (see `LIC
 
 | Path | Description |
 |------|-------------|
-| `src/` | SEISF Path D decoder (Python) and VUS bit-layout port |
+| `src/` | SEISF production unscramble decoder (Python) and VUS bit-layout port |
 | `vusinfo/` | VUS / USEIS cassette decoder in C (Yukio Yamamoto). `src/vus_decode.py` follows the same science bitstream layout. |
 
 ## Archival documents (PDF)
@@ -36,7 +36,7 @@ That site is no longer available (content disappeared after the responsible inve
 
 `materials/N51SUB.jpg` was **not** published on the UTIG web site above.
 
-It is a photograph taken by Yukio Yamamoto of a paper copy of the N51SUB assembly listing that he held from a past visit to UTIG. Included only to document ground-software structure (SEISDT / UNSCR / BOUT) used in deriving Path D.
+It is a photograph taken by Yukio Yamamoto of a paper copy of the N51SUB assembly listing that he held from a past visit to UTIG. Included only to document ground-software structure (SEISDT / UNSCR / BOUT) used in deriving the production unscramble.
 
 ## Cassette data (not redistributed)
 

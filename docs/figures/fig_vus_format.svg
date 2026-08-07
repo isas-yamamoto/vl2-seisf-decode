@@ -3441,7 +3441,7 @@ z
     </g>
    </g>
    <g id="text_24">
-    <!-- Science offset = (word 19 − 1) × 36 = 648.  Path D injects recovered SEISF bits into this region. -->
+    <!-- Science offset = (word 19 − 1) × 36 = 648.  production unscramble injects recovered SEISF bits into this region. -->
     <g style="fill: #555555" transform="translate(26.27712 384.099934) scale(0.072 -0.072)">
      <defs>
       <path id="DejaVuSans-2212" d="M 678 2272 
@@ -3872,7 +3872,7 @@ z
     </g>
    </g>
    <g id="text_31">
-    <!-- On VUS this 2048-bit region is already sequential.  On SEISF it is scrambled until Path D. -->
+    <!-- On VUS this 2048-bit region is already sequential.  On SEISF it is scrambled until production unscramble. -->
     <g style="fill: #555555" transform="translate(26.27712 484.288525) scale(0.072 -0.072)">
      <defs>
       <path id="DejaVuSans-71" d="M 947 1747 
@@ -4015,7 +4015,7 @@ z
     </g>
    </g>
    <g id="text_33">
-    <!-- Header-matched pairs (same year/DOY/GCSC) let Path D assert bit identity: 2048/2048 residual 0 -->
+    <!-- Header-matched pairs (same year/DOY/GCSC) let production unscramble assert bit identity: 2048/2048 residual 0 -->
     <g style="fill: #555555" transform="translate(35.81568 551.421898) scale(0.072 -0.072)">
      <defs>
       <path id="DejaVuSans-59" d="M -13 4666 
