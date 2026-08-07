@@ -1,12 +1,15 @@
 """
-SEISF (DLT) decode path for utig/vkg.1 .. vkg.46.
+SEISF (DLT) decode path for utig/vkg.1 .. vkg.29.
 
 Background
 ----------
-* DLT labels on UTIG 8-mm cassettes are SEISF: raw lander bit strings with
-  spacecraft DRAM address scrambling, as stored at JPL / MIT / Galveston.
-* VUS labels (vkg.47-56) are USEIS: the *same* science after N51VUS (PDP-15)
-  removed pads, ran MAP/UNSCR, and rewrote frames as 450-byte blocks.
+* DLT-labelled UTIG cassettes include **SEISF** (`vkg.1`–`vkg.29`): raw lander
+  bit strings with spacecraft DRAM address scrambling, as stored at
+  JPL / MIT / Galveston. The same DLT holding also has **MET** meteorology
+  products (`vkg.30`–`vkg.46`), which share cassette geometry but are a
+  different instrument — out of scope for this seismometer decoder.
+* VUS labels (vkg.47-56) are USEIS: the *same* SEISF science after N51VUS
+  (PDP-15) removed pads, ran MAP/UNSCR, and rewrote frames as 450-byte blocks.
 
 Hardware scramble (PD7400072) + ground inverse (N51SUB):
   The 2048-bit seismometer buffer is read out to the DAPU in an order that
@@ -1193,7 +1196,7 @@ def decode_seisf_file(
     max_frames: Optional[int] = None,
 ) -> Iterator[DecodedFrame]:
     """
-    Decode SEISF (vkg.1-46) frames.
+    Decode SEISF (vkg.1-29) frames.
 
     unscramble=True  -> MAP/SEISDT reconstruction then VUS science parse
     unscramble=False -> pack first 75 words as-is (debug/raw)

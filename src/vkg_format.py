@@ -6,7 +6,8 @@ Reference (UTIG Tech Report No.118, VUSFormat.pdf; see materials/):
   - Each original 7-track tape is one vkg.N file.
   - Multiple subgroups; each subgroup = 1000-byte header + fixed-length data records.
   - Tape id word  = 5
-  - Bytes 3-8     = tape label (ASCII): "DLT..." = SEISF (vkg.1-46), "VUS..." = USEIS (vkg.47-56)
+  - Bytes 3-8     = tape label (ASCII): "DLT..." = SEISF (vkg.1-29) or MET
+    (vkg.30-46; out of seismometer scope); "VUS..." = USEIS (vkg.47-56)
   - Bytes 9-10    = file number on original tape
   - Bytes 11-12   = length of each following data record
   - Data bytes hold original 6-bit units in the 6 LSBs (MSB 2 bits zero / pad).

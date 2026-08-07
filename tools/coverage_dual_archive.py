@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Full dual-archive coverage: SEISF (vkg.1–46) vs VUS (vkg.47–56).
+Full dual-archive coverage: SEISF (vkg.1–29) vs VUS (vkg.47–56).
+
+Also scans DLT MET cassettes (vkg.30–46) when present for completeness;
+they are a separate meteorology product, not SEISF science targets.
 
 Match key = first 108 bytes of the VUS-shaped engineering header.
 
@@ -45,6 +48,7 @@ OUT_VUS_ONLY = OUT_DIR / "coverage_vus_only_sample.jsonl"
 
 
 def seisf_paths() -> List[Path]:
+    """DLT cassette files on disk: SEISF (vkg.1–29) plus MET (vkg.30–46 if present)."""
     return [UTIG / f"vkg.{n}" for n in range(1, 47) if (UTIG / f"vkg.{n}").is_file()]
 
 
@@ -164,7 +168,7 @@ def main() -> int:
         flush=True,
     )
 
-    print("=== Scan SEISF vkg.1–46 ===", flush=True)
+    print("=== Scan DLT cassettes vkg.1–46 (SEISF 1–29; MET 30–46) ===", flush=True)
     per_file_bases: Counter = Counter()
     per_file_matched: Counter = Counter()
     matched_by_vus_file: Counter = Counter()

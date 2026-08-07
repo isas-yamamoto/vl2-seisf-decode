@@ -2,11 +2,12 @@
 """
 Sample decoder for Viking Lander 2 UTIG cassette files (utig/vkg.*).
 
-  vkg.1  - vkg.46  ... SEISF / DLT  (scrambled science buffer; this tool)
-  vkg.47 - vkg.56  ... VUS / USEIS (unscrambled; same layout as the
+  vkg.1  - vkg.29  ... SEISF / DLT  (scrambled seismometer buffer; this tool)
+  vkg.30 - vkg.46  ... MET / DLT   (meteorology; same cassette style, out of scope)
+  vkg.47 - vkg.56  ... VUS / USEIS (unscrambled SEISF science; same layout as the
                        vusinfo C decoder, see legacy/vusinfo/)
 
-README targets are vkg.1~vkg.46.
+Primary targets are SEISF vkg.1–vkg.29 and VUS vkg.47–vkg.56.
 
 Examples
 --------
@@ -200,7 +201,7 @@ def _cmd_csv(path: Path, out: Path, raw: bool, max_frames: int | None) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
-        description="Decode Viking Lander 2 UTIG vkg.* (SEISF vkg.1-46 / VUS vkg.47-56)"
+        description="Decode Viking Lander 2 UTIG vkg.* (SEISF vkg.1-29 / VUS vkg.47-56)"
     )
     p.add_argument("vkg", type=Path, help="path to vkg.N file")
     p.add_argument("--info", action="store_true", help="show cassette subgroup layout")

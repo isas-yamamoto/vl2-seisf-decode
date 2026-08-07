@@ -71,6 +71,7 @@ def first_block_gcsc_mode(frame450: bytes) -> Optional[Tuple[int, str]]:
 
 
 def seisf_paths() -> List[Path]:
+    """DLT cassette files on disk: SEISF (vkg.1–29) plus MET (vkg.30–46 if present)."""
     return [UTIG / f"vkg.{n}" for n in range(1, 47) if (UTIG / f"vkg.{n}").is_file()]
 
 

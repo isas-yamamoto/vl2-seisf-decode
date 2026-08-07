@@ -104,7 +104,7 @@ def fig_seisf():
     ax.text(
         5,
         11.45,
-        "Scrambled instrument buffer as cassettes (UTIG vkg.1–46)",
+        "Scrambled SEISF instrument buffer as cassettes (UTIG vkg.1–29)",
         ha="center",
         va="top",
         fontsize=8.5,
