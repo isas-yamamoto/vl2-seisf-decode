@@ -23,14 +23,20 @@ The following PDFs were originally distributed by UTIG from:
 
 **http://www-udc.ig.utexas.edu/external/yosio/Viking/**
 
-That site is no longer available (content disappeared after the responsible investigator retired). Copies are bundled here **for scholarly reproducibility** of the SEISF decode, not as a claim of exclusive ownership. Contact the maintainers if a rights holder requests removal or replacement with a citation-only pointer.
+That site is no longer available (content disappeared after the responsible investigator retired). The two authors (Yosio Nakamura, Lisa Gahagan) are retired and could not be reached to confirm redistribution rights; no copy of this material exists elsewhere online (Wayback Machine has no capture of the original URL prefix). Copies are bundled here **for scholarly reproducibility** of the SEISF decode, as orphan-work archival material with no identifiable commercial market, not as a claim of exclusive ownership. Contact the maintainers if a rights holder requests removal or replacement with a citation-only pointer.
 
 | Path | Description |
 |------|-------------|
-| `materials/PD7400072.pdf` | SD-37D000 / PD7400072 family (hardware buffer / DAPU readout) |
-| `materials/VUSFormat.pdf` | VUS / USEIS cassette frame format |
-| `materials/VikingSeisDataSetDescription.pdf` | Viking seismic data set description |
-| `materials/VikingASCIIFileDescription.pdf` | Viking ASCII file description |
+| `materials/VUSFormat.pdf` | VUS / USEIS cassette frame format (Yosio Nakamura) |
+| `materials/VikingSeisDataSetDescription.pdf` | Viking seismic data set description (Lisa Gahagan) |
+| `materials/VikingASCIIFileDescription.pdf` | Viking ASCII file description (Yosio Nakamura) |
+
+### External reference (not bundled)
+
+| Reference | Description |
+|-----------|-------------|
+| Nakamura, Yosio. "Catalog of Lunar Seismic Data from Apollo Passive Seismic Experiment on 8-mm Video Cassette (Exabyte) Tapes." University of Texas Institute for Geophysics Technical Report No. 118 (30 June 1992), 62p plus appendix. DOI: [10.15781/T28P5VT4C](https://doi.org/10.15781/T28P5VT4C). Sponsorship: Institute of Space and Astronautical Science (ISAS), Japan. Not redistributed here — no rights statement is published for this report, so a citation-only pointer is used instead of bundling the PDF. |
+| SD-37D000 / PD7400072 family (hardware buffer / DAPU readout). JPL technical document; excerpt pages provided by JPL librarian Charlene Nichols. Not redistributed here — copyright rests with JPL/Caltech, not with the UTIG researchers, and a formal institutional request channel exists (unlike the two retired individual authors above). Preserved separately in a restricted-access Zenodo deposit pending rights clarification. |
 
 ## N51SUB listing photograph
 
