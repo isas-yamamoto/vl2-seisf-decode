@@ -6,8 +6,8 @@ authors:
     given-names: Yukio
     affiliation: "Institute of Space and Astronautical Science (ISAS/JAXA)"
     orcid: "https://orcid.org/0000-0001-7172-1911"
-version: "0.1.0"
-date-released: "2026-08-05"
+version: "0.1.1"
+date-released: "2026-09-03"
 license: MIT
 repository-code: "https://github.com/isas-yamamoto/vl2-seisf-decode"
 abstract: >-
