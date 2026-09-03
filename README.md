@@ -1,6 +1,7 @@
 # Viking Lander 2 SEISF cassette decoder
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22271678.svg)](https://doi.org/10.5281/zenodo.22271678)
 
 Recover **bit-exact** 2048-bit science frames from scrambled **SEISF (DLT)** UTIG cassettes (`vkg.1`–`29`; `vkg.30`–`46` in the same holding are a separate meteorology instrument product, out of scope), validated against matched **VUS (USEIS)** frames (`vkg.47`–`56`).
 

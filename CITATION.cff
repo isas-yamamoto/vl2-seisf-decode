@@ -10,6 +10,13 @@ version: "0.1.1"
 date-released: "2026-09-03"
 license: MIT
 repository-code: "https://github.com/isas-yamamoto/vl2-seisf-decode"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22271679"
+    description: "Zenodo archive of version 0.1.1"
+  - type: doi
+    value: "10.5281/zenodo.22271678"
+    description: "Zenodo concept DOI, always resolves to the latest version"
 abstract: >-
   Software and materials for unscrambling Viking Lander 2 SEISF (DLT)
   cassette science buffers into VUS-compatible 2048-bit frames using
